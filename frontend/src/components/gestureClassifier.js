@@ -1,10 +1,38 @@
-// AI Model Integration — Gesture Neural Network
+// AI Model Integration — Gesture Neural Network & Dynamic Trajectory Classifier
 import { predictGesture, isModelReady, loadGestureModel, AI_CONFIDENCE_THRESHOLD } from "../ml/gestureAI";
+import { classifyDynamicGesture, loadTrajectories, isTrajectoriesReady } from "../ml/dtwClassifier";
 
-// Auto-load the gesture AI model on module initialization
+// Auto-load the gesture AI model & dynamic trajectories on module initialization
 loadGestureModel().catch(() => {
   console.warn("[GestureClassifier] AI model not available — using rule-based fallback only");
 });
+
+loadTrajectories().catch(() => {
+  console.warn("[GestureClassifier] Dynamic medical trajectories not available.");
+});
+
+// Rolling 45-frame temporal buffer for dynamic motion trajectories
+const MAX_TEMPORAL_FRAMES = 45;
+let rollingLandmarkBuffer = [];
+
+export function clearTemporalBuffer() {
+  rollingLandmarkBuffer = [];
+}
+
+function getMedicalIcon(key) {
+  const icons = {
+    PAIN: "⚡",
+    CHEST_PAIN: "🫀",
+    DIZZY: "💫",
+    BREATHE: "🫁",
+    BLEED: "🩸",
+    ALLERGY: "⚠️",
+    MEDICINE: "💊",
+    DOCTOR: "🩺",
+    HELP: "🆘",
+  };
+  return icons[key] || "🩺";
+}
 
 // MediaPipe Hand Skeleton connections (21 landmarks)
 export const HAND_CONNECTIONS = [
@@ -118,6 +146,33 @@ export function compareFeatureVectors(vecA, vecB) {
   const weightedDist = Math.sqrt(sumWeightedSqDiff / totalWeight);
   const similarity = Math.max(0, 1 - weightedDist * 1.4);
   return similarity;
+}
+
+/**
+ * Extracts unified 84-dimensional dual-hand feature vector (ported from MedSoundSigns Python core)
+ * Left hand: 0..41, Right hand: 42..83, normalized relative to each hand bounding box minimum.
+ */
+export function get84DFeatureVector(multiLandmarks, handednessList = []) {
+  const dataAux = new Float32Array(84);
+  if (!multiLandmarks || multiLandmarks.length === 0) return dataAux;
+
+  multiLandmarks.forEach((landmarks, idx) => {
+    if (!landmarks || landmarks.length < 21) return;
+    const isLeft = handednessList[idx]?.label === "Left" || idx === 0;
+    const offset = isLeft ? 0 : 42;
+
+    const xs = landmarks.map((l) => l.x);
+    const ys = landmarks.map((l) => l.y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+
+    landmarks.forEach((l, j) => {
+      dataAux[offset + j * 2] = l.x - minX;
+      dataAux[offset + j * 2 + 1] = l.y - minY;
+    });
+  });
+
+  return dataAux;
 }
 
 /**
@@ -784,6 +839,61 @@ export function classifyHandGesture(multiLandmarks, customGestures = [], motionF
   if (activeHands.length === 0) return null;
 
   // ─────────────────────────────────────────────────────────────────────────
+  // 0. Dynamic Temporal Motion Classification (MedSoundSigns DTW Trajectories)
+  // ─────────────────────────────────────────────────────────────────────────
+  const primaryHand = activeHands[0];
+  const wrist = primaryHand[0];
+  const mcp = primaryHand[9];
+  const scale = dist3D(wrist, mcp) || 0.1;
+  const normalizedLandmarks = primaryHand.map((p) => [
+    parseFloat(((p.x - wrist.x) / scale).toFixed(3)),
+    parseFloat(((p.y - wrist.y) / scale).toFixed(3)),
+    parseFloat((((p.z || 0) - (wrist.z || 0)) / scale).toFixed(3)),
+  ]);
+
+  rollingLandmarkBuffer.push({
+    wrist: [parseFloat(wrist.x.toFixed(3)), parseFloat(wrist.y.toFixed(3)), parseFloat((wrist.z || 0).toFixed(3))],
+    scale: parseFloat(scale.toFixed(3)),
+    landmarks: normalizedLandmarks,
+    time: Date.now(),
+  });
+
+  if (rollingLandmarkBuffer.length > MAX_TEMPORAL_FRAMES) {
+    rollingLandmarkBuffer.shift();
+  }
+
+  // If there is active movement, evaluate dynamic DTW trajectory
+  if (rollingLandmarkBuffer.length >= 18) {
+    const recent = rollingLandmarkBuffer.slice(-10);
+    const firstWrist = recent[0].wrist;
+    const lastWrist = recent[recent.length - 1].wrist;
+    const wristDelta = Math.sqrt(
+      Math.pow(lastWrist[0] - firstWrist[0], 2) +
+      Math.pow(lastWrist[1] - firstWrist[1], 2)
+    );
+
+    if (wristDelta > 0.035 || motionFeatures?.isShaking || motionFeatures?.isUpwardStroke) {
+      const dynamicMatch = classifyDynamicGesture(rollingLandmarkBuffer);
+      if (dynamicMatch && dynamicMatch.confidence >= 0.72) {
+        return {
+          id: dynamicMatch.key.toLowerCase(),
+          name: dynamicMatch.label,
+          icon: getMedicalIcon(dynamicMatch.key),
+          word: dynamicMatch.label,
+          confidence: Math.round(dynamicMatch.confidence * 100),
+          isDynamicMotion: true,
+          isClinical: true,
+          critical: dynamicMatch.critical,
+          motionLabel: `🩺 Dynamic Clinical (${dynamicMatch.label})`,
+          isTwoHanded: activeHands.length >= 2,
+          hands: activeHands.length,
+          handBadge: activeHands.length >= 2 ? "👐 2 Hands (Motion)" : "🖐️ 1 Hand (Motion)",
+        };
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // 1. Dual-Hand Scenario (When 2 active hands are present in camera)
   // ─────────────────────────────────────────────────────────────────────────
   if (activeHands.length >= 2) {
@@ -895,8 +1005,8 @@ export function classifyHandGesture(multiLandmarks, customGestures = [], motionF
   // ─────────────────────────────────────────────────────────────────────────
   // 2. Single-Hand Scenario (When exactly 1 active hand is in camera view)
   // ─────────────────────────────────────────────────────────────────────────
-  const primaryHand = activeHands[0];
-  const singleResult = classifySingleHand(primaryHand, customGestures, motionFeatures);
+  const singleHand = activeHands[0];
+  const singleResult = classifySingleHand(singleHand, customGestures, motionFeatures);
   if (singleResult?.isTwoHanded) return null;
 
   return singleResult;

@@ -35,22 +35,20 @@ except ImportError:
 
 api_key = os.getenv("GEMINI_API_KEY")
 
-# ── ISL vocabulary — uppercase versions of every word that has a sign video ──
-# This list is the exact set of 115 words in the sign video library.
-# The AI prompt references it so Gemini knows which tokens have videos.
+# ── ISL & Clinical Medical vocabulary — uppercase versions of words with sign videos or clinical tokens ──
 _VOCAB_UPPER = sorted([
-    "AFTER", "AGAIN", "AGAINST", "AGE", "ALL", "ALONE", "ALSO", "AND", "ASK", "AT",
-    "BE", "BEAUTIFUL", "BEFORE", "BEST", "BETTER", "BUSY", "BUT", "BYE",
-    "CAN", "CANNOT", "CHANGE", "COLLEGE", "COME", "COMPUTER",
-    "DAY", "DISTANCE", "DO", "DO NOT", "DOES NOT",
-    "EAT", "ENGINEER", "FIGHT", "FINISH", "FROM", "GLITTER",
+    "AFTER", "AGAIN", "AGAINST", "AGE", "ALL", "ALLERGY", "ALONE", "ALSO", "AND", "ASK", "AT",
+    "BE", "BEAUTIFUL", "BEFORE", "BEST", "BETTER", "BLEED", "BREATHE", "BUSY", "BUT", "BYE",
+    "CAN", "CANNOT", "CHANGE", "CHEST", "COLLEGE", "COME", "COMPUTER",
+    "DAY", "DISTANCE", "DIZZY", "DO", "DO NOT", "DOCTOR", "DOES NOT",
+    "EAT", "ENGINEER", "FEVER", "FIGHT", "FINISH", "FROM", "GLITTER",
     "GO", "GOD", "GOLD", "GOOD", "GREAT",
-    "HAND", "HANDS", "HAPPY", "HELLO", "HELP", "HER", "HERE", "HIS",
-    "HOME", "HOMEPAGE", "HOW",
-    "INVENT", "IT", "KEEP", "LANGUAGE", "LAUGH", "LEARN",
-    "ME", "MORE", "MY", "NAME", "NEXT", "NOT", "NOW",
-    "OF", "ON", "OUR", "OUT", "PRETTY", "RIGHT", "SAD", "SAFE", "SEE", "SELF",
-    "SIGN", "SING", "SO", "SOUND", "STAY", "STUDY",
+    "HAND", "HANDS", "HAPPY", "HEAD", "HEART", "HELLO", "HELP", "HER", "HERE", "HIS",
+    "HOME", "HOMEPAGE", "HOSPITAL", "HOW",
+    "INJECTION", "INVENT", "IT", "KEEP", "LANGUAGE", "LAUGH", "LEARN",
+    "ME", "MEDICINE", "MORE", "MY", "NAME", "NEXT", "NOT", "NOW", "NURSE",
+    "OF", "ON", "OUR", "OUT", "PAIN", "PILL", "PRETTY", "RIGHT", "SAD", "SAFE", "SCALE", "SEE", "SELF",
+    "SIGN", "SING", "SO", "SOUND", "STAY", "STOMACH", "STUDY", "SURGERY",
     "TALK", "TELEVISION", "THANK", "THANK YOU", "THAT", "THEY",
     "THIS", "THOSE", "TIME", "TO", "TYPE",
     "US", "WALK", "WASH", "WAY", "WE", "WELCOME",
@@ -62,34 +60,36 @@ _VOCAB_SET = set(_VOCAB_UPPER)
 _VOCAB_LIST_STR = ", ".join(_VOCAB_UPPER)
 
 ISL_SYSTEM_INSTRUCTION = f"""
-You are an expert Indian Sign Language (ISL) gloss translator.
-Your job is to convert English text into precise ISL Gloss notation using ONLY signs that exist in the supported vocabulary below.
+You are an expert Clinical Sign Language (ISL/ASL) Medical Gloss Translator for the MedSoundSigns healthcare platform.
+Your job is to convert doctor and nurse clinical dialogue into precise, life-saving sign gloss notation using ONLY signs that exist in the supported vocabulary below.
 
 SUPPORTED SIGN VOCABULARY ({len(_VOCAB_UPPER)} words):
 {_VOCAB_LIST_STR}
 
-Strict Rules:
-1. WORD ORDER: Use standard ISL grammar (Time — Subject — Object — Verb).
-   - Place time words (NOW, TODAY, TOMORROW, YESTERDAY, TIME, DAY, BEFORE, AFTER, NEXT) at the BEGINNING.
-   - Place the main VERB at the END of the clause.
-   - Place question words (WHAT, WHERE, WHY, WHO, WHEN, HOW) at the END of the sentence.
+Clinical Grammar & Triage Rules:
+1. MEDICAL ORDER: Use standard Time — Location — Symptom/Object — Severity (1-10) — Verb syntax.
+   - Place time words (NOW, TODAY, BEFORE, AFTER, NEXT) at the BEGINNING.
+   - Place anatomical locations (HEAD, CHEST, STOMACH, HEART) before the symptom.
+   - Place question words (WHAT, WHERE, WHY, WHO, WHEN, HOW) at the END of the question.
 2. CAPITALIZATION: Output every sign word in UPPERCASE only.
-3. VOCABULARY CONSTRAINT: Every output word MUST appear in the SUPPORTED SIGN VOCABULARY list above.
-   - Replace unsupported words with the closest supported synonym (e.g. SPEAK → TALK, UNDERSTAND → SEE, TRAVEL → GO).
-   - For proper nouns and words with no close synonym, fingerspell them using uppercase letters joined by hyphens (e.g. John → J-O-H-N, Delhi → D-E-L-H-I).
+3. CLINICAL VOCABULARY MAPPING: Every output word MUST appear in the SUPPORTED SIGN VOCABULARY list above.
+   - Map clinical synonyms: HURT/ACHE → PAIN, MEDS/DRUG/TABLET → MEDICINE, BLOOD → BLEED, INHALE/EXHALE → BREATHE, PHYSICIAN → DOCTOR, CLINIC → HOSPITAL.
+   - For medications, dosages, and anatomical terms outside the lexicon, fingerspell them using hyphenated uppercase letters (e.g. Aspirin → A-S-P-I-R-I-N, Penicillin → P-E-N-I-C-I-L-L-I-N, 500mg → 5-0-0-M-G).
 4. OMIT: Articles (A, AN, THE) and auxiliary verbs (IS, ARE, AM, WAS, WERE, HAVE, HAS, HAD, WILL BE).
-5. NEGATION: Place NOT or DO NOT after the verb or at the end.
-6. OUTPUT FORMAT: Output ONLY the ISL gloss string — no markdown, no quotes, no explanation.
+5. NEGATION: Place NOT or DO NOT after the symptom or at the end.
+6. OUTPUT FORMAT: Output ONLY the sign gloss string — no markdown, no quotes, no explanation.
 
-Examples:
-English: "Hello, my name is John."          → HELLO ME NAME J-O-H-N
-English: "Where are you going today?"       → TODAY YOU GO WHERE
-English: "I do not eat meat at home."       → HOME ME EAT NOT
-English: "What is your name?"               → YOUR NAME WHAT
-English: "She is travelling to Delhi."      → SHE GO D-E-L-H-I
-English: "I want to learn sign language."   → ME LANGUAGE SIGN LEARN
-English: "He speaks very fast."             → HE TALK MORE
-English: "Can you help me understand this?" → YOU ME THIS SEE HELP
+Clinical Examples:
+Doctor: "Where does it hurt?"                                   → PAIN WHERE
+Doctor: "How severe is your chest pain from 1 to 10?"           → CHEST PAIN SCALE 1 10 WHAT
+Doctor: "Are you feeling dizzy right now?"                      → NOW DIZZY YOU FEEL
+Doctor: "Do you have any difficulty breathing?"                 → BREATHE HARD YOU HAVE
+Doctor: "Are you allergic to penicillin?"                       → P-E-N-I-C-I-L-L-I-N ALLERGY YOU HAVE
+Doctor: "Please take this medicine after eating."               → EAT AFTER THIS MEDICINE TAKE
+Doctor: "We need to check your heart and blood pressure."       → YOUR HEART CHECK WE MUST
+Doctor: "The nurse will give you an injection."                 → NURSE INJECTION GIVE WILL
+Doctor: "Hello, I am Doctor John, I will help you today."       → HELLO ME DOCTOR J-O-H-N TODAY HELP YOU
+Doctor: "Please stay still and breathe slowly."                 → STAY STILL BREATHE SLOW
 """
 
 
@@ -130,15 +130,15 @@ PRONOUN_MAP = {
 }
 
 KNOWN_WORDS = {
-    "after", "again", "against", "age", "all", "alone", "also", "and", "ask", "at",
-    "be", "beautiful", "before", "best", "better", "busy", "but", "bye", "can",
-    "cannot", "change", "college", "come", "computer", "day", "distance", "do",
-    "do not", "does not", "eat", "engineer", "fight", "finish", "from", "glitter",
-    "go", "god", "gold", "good", "great", "hand", "hands", "happy", "hello", "help",
-    "her", "here", "his", "home", "homepage", "how", "invent", "it", "keep",
-    "language", "laugh", "learn", "me", "more", "my", "name", "next", "not", "now",
-    "of", "on", "our", "out", "pretty", "right", "sad", "safe", "see", "self",
-    "sign", "sing", "so", "sound", "stay", "study", "talk", "television",
+    "after", "again", "against", "age", "all", "allergy", "alone", "also", "and", "ask", "at",
+    "be", "beautiful", "before", "best", "better", "bleed", "breathe", "busy", "but", "bye", "can",
+    "cannot", "change", "chest", "college", "come", "computer", "day", "distance", "dizzy", "do",
+    "do not", "doctor", "does not", "eat", "engineer", "fever", "fight", "finish", "from", "glitter",
+    "go", "god", "gold", "good", "great", "hand", "hands", "happy", "head", "heart", "hello", "help",
+    "her", "here", "his", "home", "homepage", "hospital", "how", "injection", "invent", "it", "keep",
+    "language", "laugh", "learn", "me", "medicine", "more", "my", "name", "next", "not", "now", "nurse",
+    "of", "on", "our", "out", "pain", "pill", "pretty", "right", "sad", "safe", "scale", "see", "self",
+    "sign", "sing", "so", "sound", "stay", "stomach", "study", "surgery", "talk", "television",
     "thank you", "thank", "that", "they", "this", "those", "time", "to", "type",
     "us", "walk", "wash", "way", "we", "welcome", "what", "when", "where", "which",
     "who", "whole", "whose", "why", "will", "with", "without", "words", "work",

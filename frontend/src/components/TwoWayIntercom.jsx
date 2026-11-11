@@ -18,6 +18,55 @@ export default function TwoWayIntercom({
 }) {
   const [activeMode, setActiveMode] = useState("split");
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(true);
+  const [selectedPain, setSelectedPain] = useState(null);
+
+  // Play subtle clinical chime tone
+  const playClinicalAlertTone = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+      osc.frequency.setValueAtTime(880.0, audioCtx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.45);
+    } catch {
+      // AudioContext not supported or uninitialized
+    }
+  };
+
+  const handleSelectPainScale = (level) => {
+    setSelectedPain(level);
+    let severity = "Mild";
+    if (level >= 4 && level <= 6) severity = "Moderate";
+    if (level >= 7) severity = "Severe";
+    const painText = `Patient reports Pain Level: ${level}/10 (${severity})`;
+
+    playClinicalAlertTone();
+    if (onAddMessage) {
+      onAddMessage({
+        sender: "gesture",
+        text: painText,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isClinical: true,
+        painLevel: level,
+      });
+    }
+    speakText(`Patient reports pain level ${level} out of 10, ${severity}`, "gentle");
+  };
+
+  const CLINICAL_PRESETS = [
+    { label: "📍 Pain Location", text: "Where does it hurt?" },
+    { label: "📊 Rate Pain 1-10", text: "How severe is your pain from 1 to 10?" },
+    { label: "⚠️ Any Allergies?", text: "Do you have any allergies?" },
+    { label: "💊 Take Medicine", text: "Please take this medicine after eating" },
+    { label: "🫁 Breathe Slowly", text: "Please stay still and breathe slowly" },
+  ];
 
   // Auto-collapse timeline when entering gesture-only mode to maximise camera space
   const handleSetMode = (mode) => {
@@ -199,10 +248,61 @@ export default function TwoWayIntercom({
 
       </div>
 
+      {/* ── MedSoundSigns Clinical Triage & Pain Scale HUD ── */}
+      <div className="flex-shrink-0 bg-slate-900/90 dark:bg-[#000000] border border-blue-500/30 dark:border-[#004AFF]/40 rounded-xl px-3 py-2 flex flex-col md:flex-row items-center justify-between gap-2 shadow-sm text-xs">
+        {/* Pain Scale (1 to 10) */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-bold text-slate-300 dark:text-[#DDE3E7] flex items-center gap-1 text-[11px]">
+            <span>🩺 Pain Scale:</span>
+          </span>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+              const isSelected = selectedPain === num;
+              let bg = "bg-slate-800 text-slate-300 hover:bg-slate-700";
+              if (num <= 3) {
+                if (isSelected) bg = "bg-emerald-600 text-white font-bold ring-2 ring-emerald-400";
+              } else if (num <= 6) {
+                if (isSelected) bg = "bg-amber-600 text-white font-bold ring-2 ring-amber-400";
+              } else {
+                if (isSelected) bg = "bg-rose-600 text-white font-bold ring-2 ring-rose-400";
+              }
+              return (
+                <button
+                  key={num}
+                  onClick={() => handleSelectPainScale(num)}
+                  className={`w-6 h-6 rounded-md text-[11px] flex items-center justify-center transition-all cursor-pointer ${bg}`}
+                  title={`Record pain level ${num}/10`}
+                >
+                  {num}
+                </button>
+              );
+            })}
+          </div>
+          <span className="text-[10px] text-slate-400 hidden lg:inline">
+            (1-3: Mild · 4-6: Mod · 7-10: Severe)
+          </span>
+        </div>
+
+        {/* Doctor Quick Triage Prompts */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] text-slate-400 hidden xl:inline">Doctor Prompts:</span>
+          {CLINICAL_PRESETS.map((p, idx) => (
+            <button
+              key={idx}
+              onClick={() => submitText && submitText(p.text)}
+              className="text-[10px] px-2 py-1 rounded-lg bg-blue-950/60 hover:bg-blue-900 border border-blue-500/30 text-blue-200 transition-colors cursor-pointer"
+              title={`Ask patient: "${p.text}"`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Bottom Half: Shared Real-Time Conversation Timeline ── */}
       <div
         className={`flex-shrink-0 bg-white/75 dark:bg-[#000000] backdrop-blur-md rounded-2xl border border-white/40 dark:border-[#004AFF]/30 shadow-lg p-2.5 sm:p-3 flex flex-col overflow-hidden transition-all duration-300 ${
-          isTimelineExpanded ? "h-36 sm:h-44" : "h-11"
+          isTimelineExpanded ? "h-40 sm:h-48" : "h-11"
         }`}
       >
         <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-200 dark:border-[#004AFF]/25 flex-shrink-0">
@@ -264,7 +364,14 @@ export default function TwoWayIntercom({
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-0.5 font-semibold">
-                        <span>{isHearing ? "Hearing User (Voice)" : "Gesture User (Sign)"}</span>
+                        <span className="flex items-center gap-1.5">
+                          <span>{isHearing ? "Doctor / Clinician (Voice)" : "DHH Patient (Sign)"}</span>
+                          {msg.isClinical && (
+                            <span className="bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/40 px-1.5 py-0.2 rounded-full text-[9px] font-bold">
+                              🩺 Clinical Triage
+                            </span>
+                          )}
+                        </span>
                         <span>{msg.timestamp}</span>
                       </div>
 

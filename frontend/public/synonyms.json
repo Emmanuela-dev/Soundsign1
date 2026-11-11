@@ -273,5 +273,13 @@
   "remain": "stay", "remains": "stay",
   "number": "name", "open": "go", "close": "finish",
   "late": "after",
-  "following": "go"
+  "following": "go",
+  "hurt": "pain", "ache": "pain", "aching": "pain", "injure": "pain",
+  "meds": "medicine", "medication": "medicine", "drug": "medicine", "drugs": "medicine", "pill": "medicine", "pills": "medicine",
+  "physician": "doctor", "doc": "doctor",
+  "emergency": "help", "ambulance": "help",
+  "inhale": "breathe", "exhale": "breathe", "breathing": "breathe",
+  "bleeding": "bleed", "blood": "bleed",
+  "dizziness": "dizzy", "faint": "dizzy",
+  "allergic": "allergy", "reaction": "allergy"
 }
