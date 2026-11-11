@@ -15,6 +15,9 @@ import ISLSignVideoTranslator, {
 } from "./ISLSignVideoTranslator";
 import { HandMotionTracker } from "./motionTracker";
 import { getCachedSrc } from "../hooks/useVideoPreloader";
+import CameraFramingGuide from "./CameraFramingGuide";
+import AppIcon from "./AppIcon";
+import { Camera, Play, BookOpen, Volume2, Search, Hand, Users, Sparkles, MessageSquare, AlertCircle, X, Check, Loader2, Plus } from "lucide-react";
 
 const POPULAR_EMOJIS = [
   "✨", "💧", "🩺", "🍎", "🏠", "💡", "✋", "🤟", "🤝", "❤️", "⚡", "☕", "🚻", "🚗", "🙏", "🫶"
@@ -62,7 +65,7 @@ const loadMediaPipe = async () => {
   throw new Error("MediaPipe Hands script load timeout");
 };
 
-export default function GestureTerminal({ onSendMessage, isFullFocus = false }) {
+export default function GestureTerminal({ onSendMessage, isFullFocus = false, minimalMode = false }) {
   // Top view mode: "interpreter" (Camera View) | "gallery" (Dedicated Gesture Gallery)
   const [viewMode, setViewMode] = useState("interpreter");
 
@@ -98,11 +101,11 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
       const parsed = JSON.parse(saved);
       return Array.isArray(parsed)
         ? parsed.filter(
-            (g) =>
-              !g.name?.toLowerCase().includes("namaste") &&
-              !g.word?.toLowerCase().includes("namaste") &&
-              !g.id?.toLowerCase().includes("namaste")
-          )
+          (g) =>
+            !g.name?.toLowerCase().includes("namaste") &&
+            !g.word?.toLowerCase().includes("namaste") &&
+            !g.id?.toLowerCase().includes("namaste")
+        )
         : [];
     } catch {
       return [];
@@ -120,9 +123,72 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const animFrameRef = useRef(null);
   const handsInstanceRef = useRef(null);
   const isProcessingFrameRef = useRef(false);
+
+  // Dynamic aspect ratio & letterbox stage dimensions
+  const [videoAspectRatio, setVideoAspectRatio] = useState(16 / 9);
+  const [stageDimensions, setStageDimensions] = useState({ width: 0, height: 0 });
+  const [showFramingGuide, setShowFramingGuide] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Fullscreen toggle handler
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => { });
+    } else {
+      containerRef.current.requestFullscreen().catch(() => { });
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+
+  // Update intrinsic video aspect ratio without cropping
+  const handleVideoMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+      const ratio = video.videoWidth / video.videoHeight;
+      setVideoAspectRatio(ratio);
+    }
+  }, []);
+
+  // Synchronize stage dimensions to fit container perfectly while preserving complete frame
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateStage = () => {
+      const cW = container.clientWidth;
+      const cH = container.clientHeight;
+      if (!cW || !cH) return;
+
+      const ratio = videoAspectRatio > 0 ? videoAspectRatio : 16 / 9;
+      let width, height;
+
+      if (cW / cH > ratio) {
+        // Container is wider than stream: fit height, letterbox horizontally
+        height = cH;
+        width = Math.round(cH * ratio);
+      } else {
+        // Container is taller than stream: fit width, letterbox vertically
+        width = cW;
+        height = Math.round(cW / ratio);
+      }
+      setStageDimensions({ width, height });
+    };
+
+    updateStage();
+    const ro = new ResizeObserver(updateStage);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [videoAspectRatio]);
 
   // Smooth Transition & Stability Refs
   const currentGestureRef = useRef(null);
@@ -213,8 +279,8 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
       if (!canvas) return;
 
       const ctx = canvas.getContext("2d");
-      const w = canvas.offsetWidth || videoRef.current?.videoWidth || 640;
-      const h = canvas.offsetHeight || videoRef.current?.videoHeight || 480;
+      const w = stageDimensions.width || canvas.offsetWidth || videoRef.current?.videoWidth || 640;
+      const h = stageDimensions.height || canvas.offsetHeight || videoRef.current?.videoHeight || 480;
       if (canvas.width !== w) canvas.width = w;
       if (canvas.height !== h) canvas.height = h;
 
@@ -332,7 +398,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
         }
       }
     },
-    [customGestures, interpretSign]
+    [customGestures, interpretSign, stageDimensions]
   );
 
   // ── Initialize MediaPipe with BOTH HANDS (maxNumHands: 2) ───────────────
@@ -389,7 +455,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
     }
   }, [onHandResults]);
 
-  // ── Camera Management ──────────────────────────────────────────────────
+  // ── Camera Management with Cascading Fallbacks ─────────────────────────
   const startCamera = async () => {
     setCameraError("");
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -399,55 +465,54 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
       return;
     }
 
-    try {
-      let stream;
+    const configs = [
+      // 1. High-definition 16:9 user-facing
+      { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false },
+      // 2. Standard definition user-facing (budget devices & mobile)
+      { video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }, audio: false },
+      // 3. Unconstrained user-facing
+      { video: { facingMode: "user" }, audio: false },
+      // 4. Any available camera
+      { video: true, audio: false },
+    ];
+
+    let stream = null;
+    let lastError = null;
+
+    for (const config of configs) {
       try {
-        // High-definition wide-angle 16:9 stream to maximize comfortable signing range
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1920, min: 1280 },
-            height: { ideal: 1080, min: 720 },
-            aspectRatio: { ideal: 1.7777777778 },
-            facingMode: "user",
-          },
-          audio: false,
-        });
+        stream = await navigator.mediaDevices.getUserMedia(config);
+        if (stream) break;
       } catch (err) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-            audio: false,
-          });
-        } catch (err2) {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false,
-          });
-        }
+        lastError = err;
       }
+    }
 
-      streamRef.current = stream;
-      setIsCameraActive(true);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch((e) => console.warn("Video play error:", e));
-        };
-        videoRef.current.play().catch((e) => console.warn("Video play error:", e));
-      }
-
-      startHandTracking();
-    } catch (err) {
-      console.error("Camera access error:", err);
+    if (!stream) {
+      console.error("Camera access error:", lastError);
       setCameraError(
-        err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
-          ? "Camera permission denied. Please allow camera access in your browser address bar or settings."
-          : `Camera unavailable (${err.name || "error"}). Please ensure no other application is using your camera.`
+        lastError?.name === "NotAllowedError" || lastError?.name === "PermissionDeniedError"
+          ? "Camera permission denied. Please allow camera access in your browser settings to enable hand tracking."
+          : `Camera unavailable (${lastError?.name || "error"}). Please ensure no other application is using your webcam.`
       );
       setIsCameraActive(false);
       setAiStatus("idle");
+      return;
     }
+
+    streamRef.current = stream;
+    setIsCameraActive(true);
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        handleVideoMetadata();
+        videoRef.current?.play().catch((e) => console.warn("Video play error:", e));
+      };
+      videoRef.current.play().catch((e) => console.warn("Video play error:", e));
+    }
+
+    startHandTracking();
   };
 
   useEffect(() => {
@@ -707,64 +772,61 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
   });
 
   return (
-    <div className="bg-white/85 dark:bg-[#000000] backdrop-blur-xl rounded-2xl border border-white/30 dark:border-[#004AFF]/30 shadow-xl p-3 sm:p-4 flex flex-col h-full min-h-0 overflow-hidden transition-colors duration-300">
+    <div className="bg-white/95 dark:bg-dark-surface rounded-2xl border border-warm-200 dark:border-dark-border shadow-card p-3 sm:p-4 flex flex-col h-full min-h-0 overflow-hidden transition-colors duration-300">
       {/* ── Header: Title, Mode Toggles (Live Camera vs Gallery) & Controls ── */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5 flex-shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 dark:bg-[#004AFF] flex items-center justify-center text-white shadow-lg">
+          <div className="w-9 h-9 rounded-xl bg-signing-600 text-white flex items-center justify-center shadow-sm">
             <span className="emoji text-lg select-none">🤟</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm sm:text-base font-bold text-blue-700 dark:text-[#DDE3E7] flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-dark-text flex items-center gap-2">
                 <span>Sign Language Camera Interpreter</span>
                 {isCameraActive && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#004AFF] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 )}
               </h3>
 
               {/* View Switcher: Live Camera vs Video Signs vs Dedicated Gallery */}
-              <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-0.5 rounded-lg border border-slate-200 dark:border-[#004AFF]/30 text-xs">
+              <div className="flex items-center bg-warm-100 dark:bg-dark-card p-0.5 rounded-lg border border-warm-200 dark:border-dark-border text-xs">
                 <button
                   onClick={() => setViewMode("interpreter")}
-                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                    viewMode === "interpreter"
-                      ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-blue-600 dark:hover:text-[#004AFF]"
-                  }`}
+                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${viewMode === "interpreter"
+                    ? "bg-white dark:bg-slate-800 text-signing-700 dark:text-white shadow-xs font-semibold"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                    }`}
                   title="Live Optical Vision Camera Interpreter"
                 >
                   <span className="emoji">📹</span>
-                  <span>Camera Mode</span>
+                  <span>Camera</span>
                 </button>
                 <button
                   onClick={() => setViewMode("video")}
-                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                    viewMode === "video"
-                      ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-blue-600 dark:hover:text-[#004AFF]"
-                  }`}
-                  title="High-Clarity ISL Video Translator (Sign → Voice) with zero camera errors"
+                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${viewMode === "video"
+                    ? "bg-white dark:bg-slate-800 text-signing-700 dark:text-white shadow-xs font-semibold"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                    }`}
+                  title="Reference Sign Video Player"
                 >
                   <span className="emoji">🎬</span>
-                  <span>Video Signs (Sign → Voice)</span>
+                  <span>Signs</span>
                 </button>
                 <button
                   onClick={() => setViewMode("gallery")}
-                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                    viewMode === "gallery"
-                      ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-blue-600 dark:hover:text-[#004AFF]"
-                  }`}
+                  className={`px-2.5 py-0.5 rounded-md font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${viewMode === "gallery"
+                    ? "bg-white dark:bg-slate-800 text-signing-700 dark:text-white shadow-xs font-semibold"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                    }`}
                   title="Browse full Gesture Gallery catalog"
                 >
                   <span className="emoji">📚</span>
-                  <span>Gallery ({allGesturesList.length})</span>
+                  <span>Catalog ({allGesturesList.length})</span>
                 </button>
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-[#DDE3E7]/70">
-              Dual Optical AR & Ground-Truth ISL Video Interpreter · Real-time Voice Synthesis
+            <p className="text-[11px] text-slate-500 dark:text-dark-muted">
+              Optical Hand Tracking · 21 Landmarks per Hand · Assisted Voice Output
             </p>
           </div>
         </div>
@@ -772,41 +834,24 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
         {/* Action Controls */}
         <div className="flex items-center flex-wrap gap-2">
           {/* Reference Video Guide in Camera Mode */}
-          {viewMode === "interpreter" && (
+          {viewMode === "interpreter" && isCameraActive && (
             <button
               onClick={() => setShowCamRefVideo(!showCamRefVideo)}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all ${
-                showCamRefVideo
-                  ? "bg-emerald-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] ring-2 ring-emerald-400 dark:ring-[#004AFF]"
-                  : "bg-blue-100 dark:bg-[#004AFF]/20 text-blue-800 dark:text-[#DDE3E7] border border-blue-200 dark:border-[#004AFF]/40 hover:bg-blue-200 dark:hover:bg-[#004AFF]/30"
-              }`}
-              title="Toggle high-clarity reference ISL video guide next to camera"
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition-all ${showCamRefVideo
+                ? "bg-signing-600 text-white"
+                : "bg-warm-100 dark:bg-dark-card text-slate-700 dark:text-slate-200 border border-warm-200 dark:border-dark-border hover:bg-warm-200"
+                }`}
+              title="Toggle reference sign demonstration guide next to camera"
             >
               <span className="emoji">🎬</span>
-              <span>{showCamRefVideo ? "Hide Video Guide" : "Sign Video Guide"}</span>
-            </button>
-          )}
-
-          {/* Video Signing Range Toggle (Spacious Wide Range vs Max Cinema Stage) */}
-          {viewMode === "interpreter" && (
-            <button
-              onClick={() => setVideoRangeMode(videoRangeMode === "wide" ? "cinema" : "wide")}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all ${
-                videoRangeMode === "cinema"
-                  ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] ring-2 ring-blue-400"
-                  : "bg-slate-100 dark:bg-[#004AFF]/20 text-slate-700 dark:text-[#DDE3E7] border border-slate-300 dark:border-[#004AFF]/40 hover:bg-slate-200 dark:hover:bg-[#004AFF]/30"
-              }`}
-              title={videoRangeMode === "cinema" ? "Switch to standard comfortable range" : "Maximize video range to full height for comfortable signing"}
-            >
-              <span className="emoji">{videoRangeMode === "cinema" ? "🗗" : "⛶"}</span>
-              <span>{videoRangeMode === "cinema" ? "Standard Range" : "Maximize Range"}</span>
+              <span>{showCamRefVideo ? "Hide Guide" : "Sign Guide"}</span>
             </button>
           )}
 
           {/* ➕ Train Sign Button */}
           <button
             onClick={handleOpenTraining}
-            className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all hover:scale-102"
+            className="px-2.5 py-1.5 bg-signing-600 hover:bg-signing-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition-all"
             title="Train camera to learn any new custom hand gesture"
           >
             <span className="text-sm leading-none">➕</span>
@@ -814,16 +859,15 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           </button>
 
           {/* Emotion Profile Selector */}
-          <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-0.5 rounded-xl border border-slate-200 dark:border-[#004AFF]/30 text-xs">
+          <div className="flex items-center bg-warm-100 dark:bg-dark-card p-0.5 rounded-xl border border-warm-200 dark:border-dark-border text-xs">
             {Object.values(EMOTION_PROFILES).map((em) => (
               <button
                 key={em.id}
                 onClick={() => setVoiceEmotion(em.id)}
-                className={`px-2 py-0.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                  voiceEmotion === em.id
-                    ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
-                    : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-blue-600 dark:hover:text-[#004AFF]"
-                }`}
+                className={`px-2 py-0.5 rounded-lg font-medium text-[11px] transition-all cursor-pointer ${voiceEmotion === em.id
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                  }`}
                 title={em.description}
               >
                 {em.shortLabel}
@@ -834,22 +878,22 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           {/* Test Voice Button */}
           <button
             onClick={handleTestVoice}
-            className="px-2.5 py-1 bg-blue-100 dark:bg-[#004AFF]/20 hover:bg-blue-200 dark:hover:bg-[#004AFF]/30 text-blue-800 dark:text-[#DDE3E7] border border-transparent dark:border-[#004AFF]/40 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
-            title="Preview how soft human voice sounds"
+            className="px-2.5 py-1 bg-warm-100 hover:bg-warm-200 dark:bg-dark-card dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-warm-200 dark:border-dark-border rounded-lg text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+            title="Preview how voice synthesis sounds"
           >
             <span className="emoji">🔊</span>
             <span>Test Voice</span>
           </button>
 
           {/* Auto-Speak Checkbox */}
-          <label className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 dark:text-[#DDE3E7]/80 cursor-pointer select-none bg-blue-50 dark:bg-[#000000] px-2 py-1 rounded-lg border border-blue-200 dark:border-[#004AFF]/30">
+          <label className="hidden sm:flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer select-none bg-warm-100 dark:bg-dark-card px-2 py-1 rounded-lg border border-warm-200 dark:border-dark-border">
             <input
               type="checkbox"
               checked={autoSpeak}
               onChange={(e) => setAutoSpeak(e.target.checked)}
-              className="rounded text-blue-600 dark:text-[#004AFF] focus:ring-blue-500 dark:focus:ring-[#004AFF] cursor-pointer"
+              className="rounded text-signing-600 focus:ring-signing-500 cursor-pointer"
             />
-            <span className="font-semibold text-blue-700 dark:text-[#DDE3E7]">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               Live Voice
             </span>
           </label>
@@ -857,11 +901,10 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           {/* Camera Button */}
           <button
             onClick={isCameraActive ? stopCamera : startCamera}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
-              isCameraActive
-                ? "bg-red-500 hover:bg-red-600 text-white"
-                : "bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7]"
-            }`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${isCameraActive
+              ? "bg-rose-600 hover:bg-rose-700 text-white"
+              : "bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+              }`}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -919,11 +962,10 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                 <button
                   key={cat.id}
                   onClick={() => setGalleryCategory(cat.id)}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                    galleryCategory === cat.id
-                      ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20"
-                  }`}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${galleryCategory === cat.id
+                    ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-xs"
+                    : "text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20"
+                    }`}
                 >
                   {cat.label}
                 </button>
@@ -1063,233 +1105,294 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
         />
       ) : (
         /* ───────────────────────────────────────────────────────────────── */
-        /* VIEW C: LIVE CAMERA INTERPRETER WORKSPACE                         */
+        /* VIEW C: LIVE CAMERA INTERPRETER WORKSPACE (UNCROPPED 1:1 STAGE)   */
         /* ───────────────────────────────────────────────────────────────── */
         <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
-          {/* ── Prominent Camera & Sign Interpreter Stage (Full View) ── */}
+          {/* ── Outer Camera Viewport Container (Aspect-Ratio Preserved Letterbox Stage) ── */}
           <div
-            className={`relative rounded-2xl overflow-hidden flex items-center justify-center border border-white/15 dark:border-white/20 shadow-2xl transition-all flex-1 min-h-0 w-full bg-black dark:bg-[#000000]`}
+            ref={containerRef}
+            className={`relative rounded-2xl overflow-hidden flex items-center justify-center bg-slate-950 dark:bg-slate-950 border border-warm-200/40 dark:border-slate-800 shadow-xl transition-all flex-1 min-h-[320px] sm:min-h-[440px] w-full select-none ${isFullscreen ? "fixed inset-0 z-50 rounded-none min-h-screen" : ""
+              }`}
           >
-            {/* Video stage fills the camera container entirely */}
-            <div className="absolute inset-0 w-full h-full">
-              {/* Permanently mounted Video element */}
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`w-full h-full object-cover transform -scale-x-100 ${
-                  isCameraActive ? "block" : "hidden"
-                }`}
-              />
-
-              {/* Real Hand Skeleton Canvas Overlay for BOTH hands */}
-              <canvas
-                ref={canvasRef}
-                className={`absolute inset-0 w-full h-full pointer-events-none ${
-                  isCameraActive ? "block" : "hidden"
-                }`}
-              />
-            </div>
-
-            {/* In-Camera Floating ISL Reference Video PiP (Always accessible in Camera Mode) */}
-            {showCamRefVideo && (
-              <div className="absolute top-12 right-3 w-56 sm:w-64 bg-black/95 dark:bg-[#000000]/95 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 shadow-2xl p-2.5 z-20 flex flex-col gap-2">
-                <div className="flex items-center justify-between pb-1 border-b border-white/10 dark:border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-white dark:text-[#DDE3E7]">
-                    <span className="emoji">🎬</span>
-                    <span>ISL Sign Video Guide</span>
-                  </div>
-                  <button
-                    onClick={() => setShowCamRefVideo(false)}
-                    className="text-slate-400 hover:text-white text-xs cursor-pointer px-1"
-                    title="Close video guide"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
-                  <video
-                    src={getCachedSrc(camRefSign?.path || "/videos/words/Hello.mp4")}
-                    autoPlay
-                    loop
-                    playsInline
-                    muted
-                    className="w-full h-full object-contain"
-                  />
-                  <div className="absolute bottom-1 left-2 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-bold">
-                    {camRefSign?.icon} {camRefSign?.word}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      if (camRefSign) {
-                        interpretSign({
-                          id: camRefSign.word.toLowerCase().replace(/[^a-z0-9]/g, "_"),
-                          name: camRefSign.word,
-                          word: camRefSign.word,
-                          icon: camRefSign.icon || "🤟",
-                        });
-                      }
-                    }}
-                    className="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                    title="Speak this sign and send to conversation"
-                  >
-                    <span className="emoji">🔊</span>
-                    <span>Speak Sign</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTargetVideoSign(camRefSign);
-                      setViewMode("video");
-                    }}
-                    className="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 dark:bg-[#000000] border border-white/10 dark:border-[#004AFF]/40 text-slate-200 dark:text-[#DDE3E7] text-[11px] font-semibold cursor-pointer"
-                    title="Open full video translator"
-                  >
-                    <span>Full ↗</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
             {isCameraActive ? (
               <>
-                {/* Status Header Badge (Tracks both hands) */}
-                <div className="absolute top-2.5 left-3 flex items-center gap-2 bg-black/85 dark:bg-[#000000]/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 dark:border-white/20 text-xs text-white dark:text-[#DDE3E7] font-mono shadow-lg">
-                  {aiStatus === "loading" && (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-spin" />
-                      <span>LOADING AI VISION MODEL…</span>
-                    </>
-                  )}
-                  {aiStatus === "ready" && (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="font-semibold text-white dark:text-[#DDE3E7]">
-                        HOLD SIGN (ONE OR BOTH HANDS)
-                      </span>
-                    </>
-                  )}
-                  {aiStatus === "hand_detected" && (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="font-semibold text-emerald-300">
-                        {handsDetectedCount >= 2
-                          ? "2 HANDS IN VIEW"
-                          : "1 HAND ACTIVE"}
-                      </span>
-                    </>
-                  )}
-                  {aiStatus === "error" && (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      <span className="text-amber-300">VISION STANDBY (USE BUTTONS BELOW)</span>
-                    </>
-                  )}
-                </div>
+                {/* ── Inner Aspect-Ratio Matched Stage (Zero Cropping, Exact Overlay Alignment) ── */}
+                <div
+                  className="relative flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: stageDimensions.width ? `${stageDimensions.width}px` : "100%",
+                    height: stageDimensions.height ? `${stageDimensions.height}px` : "100%",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                >
+                  {/* Uncropped Video Feed (object-contain ensures complete frame visibility) */}
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    onLoadedMetadata={handleVideoMetadata}
+                    className="w-full h-full object-contain transform -scale-x-100 block"
+                  />
 
-                {/* Active Gesture Interpretation Banner with smooth cross-fade transition */}
-                {currentGesture && (
-                  <div
-                    key={currentGesture.id}
-                    className="absolute top-2.5 right-3 bg-emerald-950/90 dark:bg-[#000000]/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/60 dark:border-emerald-500/60 text-emerald-300 dark:text-[#DDE3E7] text-xs font-bold flex items-center gap-2 shadow-xl transition-all duration-300 ease-out transform scale-100 opacity-100 z-10"
-                  >
-                    <span className="emoji text-base transition-transform duration-300">{currentGesture.icon}</span>
-                    <span className="tracking-wide">RECOGNIZED: "{currentGesture.word}"</span>
-                    <span className="text-[10px] bg-emerald-500/30 dark:bg-emerald-500/30 px-1.5 py-0.5 rounded text-emerald-200 dark:text-[#DDE3E7] font-mono">
-                      {currentGesture.confidence}%
-                    </span>
-                    {currentGesture.singleHandOnly && (
-                      <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-mono">
-                        1-HAND ONLY
-                      </span>
-                    )}
-                    {currentGesture.isTwoHanded && (
-                      <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-mono">
-                        2-HANDED
-                      </span>
-                    )}
-                    {currentGesture.isCustom && (
-                      <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-mono">
-                        CUSTOM
-                      </span>
-                    )}
-                    {currentGesture.isAIPrediction && (
-                      <span className="text-[9px] bg-[#004AFF]/20 text-[#004AFF] dark:text-[#004AFF] border border-[#004AFF]/40 px-1 py-0.2 rounded font-mono">
-                        AI MODEL
-                      </span>
-                    )}
-                  </div>
-                )}
+                  {/* Real Hand Skeleton Canvas Overlay for BOTH hands — 1:1 with video pixels */}
+                  <canvas
+                    ref={canvasRef}
+                    className="absolute inset-0 w-full h-full pointer-events-none block"
+                  />
 
+                  {/* Subtle Camera Framing Guide */}
+                  <CameraFramingGuide
+                    isHandsDetected={handsDetectedCount > 0}
+                    showGuide={showFramingGuide}
+                  />
 
-
-                {/* In-Camera Quick Trigger Drawer (Collapsible so signing area is 100% unobstructed) */}
-                {isQuickDrawerOpen ? (
-                  <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-4 bg-slate-950/90 dark:bg-[#000000]/95 backdrop-blur-lg p-2 rounded-xl border border-white/10 dark:border-[#004AFF]/40 shadow-2xl z-20 transition-all">
-                    <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#DDE3E7]/70 mb-1 px-1 flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <span className="emoji">✨</span>
-                        <span>Quick Signs:</span>
-                      </span>
-                      <div className="flex items-center gap-2">
+                  {/* In-Camera Floating Reference Video Guide (PiP) */}
+                  {showCamRefVideo && (
+                    <div className="absolute top-12 right-3 w-56 sm:w-64 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl p-2.5 z-30 flex flex-col gap-2">
+                      <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                          <span className="emoji">🎬</span>
+                          <span>Reference Sign Guide</span>
+                        </div>
                         <button
-                          onClick={() => setViewMode("video")}
-                          className="text-emerald-400 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                          onClick={() => setShowCamRefVideo(false)}
+                          className="text-slate-400 hover:text-white text-xs cursor-pointer px-1"
+                          title="Close guide"
                         >
-                          <span>🎬 Video Mode ↗</span>
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                        <video
+                          src={getCachedSrc(camRefSign?.path || "/videos/words/Hello.mp4")}
+                          autoPlay
+                          loop
+                          playsInline
+                          muted
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute bottom-1 left-2 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-bold">
+                          {camRefSign?.icon} {camRefSign?.word}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            if (camRefSign) {
+                              interpretSign({
+                                id: camRefSign.word.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+                                name: camRefSign.word,
+                                word: camRefSign.word,
+                                icon: camRefSign.icon || "🤟",
+                              });
+                            }
+                          }}
+                          className="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          title="Speak this sign and send to conversation"
+                        >
+                          <span className="emoji">🔊</span>
+                          <span>Speak Sign</span>
                         </button>
                         <button
-                          onClick={() => setViewMode("gallery")}
-                          className="text-blue-400 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                          onClick={() => {
+                            setTargetVideoSign(camRefSign);
+                            setViewMode("video");
+                          }}
+                          className="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-200 text-[11px] font-semibold cursor-pointer"
+                          title="Open in video player"
                         >
-                          <span>Full Gallery ({allGesturesList.length}) ↗</span>
-                        </button>
-                        <button
-                          onClick={() => setIsQuickDrawerOpen(false)}
-                          className="text-slate-300 hover:text-white text-xs px-2 py-0.5 rounded bg-slate-800 dark:bg-[#000000] border border-white/10 cursor-pointer ml-1"
-                          title="Minimize drawer to clear signing field"
-                        >
-                          ▾ Minimize
+                          <span>Full ↗</span>
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                      {allGesturesList.slice(0, 16).map((g) => (
-                        <button
-                          key={g.id}
-                          onClick={() => interpretSign(g)}
-                          className="px-2.5 py-1 bg-slate-800/90 dark:bg-[#000000] hover:bg-blue-600 hover:text-white dark:hover:bg-[#004AFF] dark:hover:text-[#DDE3E7] border border-slate-700 dark:border-[#004AFF]/30 hover:border-blue-400 dark:hover:border-[#004AFF] rounded-lg text-xs font-semibold text-slate-200 dark:text-[#DDE3E7] flex items-center gap-1.5 whitespace-nowrap transition-all shadow-xs cursor-pointer flex-shrink-0"
-                          title={`Sign "${g.name}"`}
-                        >
-                          <span className="emoji text-sm">{g.icon}</span>
-                          <span>{g.word}</span>
-                        </button>
-                      ))}
+                  )}
+                </div>
+
+                {/* ── Non-Obtrusive Top Overlay HUD ── */}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
+                  {/* Left: Hand Detection & AI Tracking Status */}
+                  <div className="flex items-center gap-2 pointer-events-auto">
+                    <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/15 text-xs text-white font-mono shadow-md">
+                      {aiStatus === "loading" && (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-spin" />
+                          <span className="text-[11px]">INITIALIZING VISION…</span>
+                        </>
+                      )}
+                      {aiStatus === "ready" && (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-[11px] font-medium text-slate-200">
+                            SIGN IN VIEW (1 OR 2 HANDS)
+                          </span>
+                        </>
+                      )}
+                      {aiStatus === "hand_detected" && (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-[11px] font-semibold text-emerald-300">
+                            {handsDetectedCount >= 2 ? "2 HANDS TRACKED" : "1 HAND ACTIVE"}
+                          </span>
+                        </>
+                      )}
+                      {aiStatus === "error" && (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-amber-400" />
+                          <span className="text-[11px] text-amber-300">VISION STANDBY</span>
+                        </>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setIsQuickDrawerOpen(true)}
-                    className="absolute bottom-2.5 left-3 bg-black/85 dark:bg-[#000000]/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 dark:border-white/20 text-[11px] text-white dark:text-[#DDE3E7] font-semibold flex items-center gap-1.5 shadow-lg hover:bg-slate-800 cursor-pointer z-10 transition-all hover:scale-102"
-                    title="Open Quick Signs panel"
-                  >
-                    <span className="emoji">✨</span>
-                    <span>Quick Signs (16) ▴</span>
-                  </button>
-                )}
+
+                  {/* Right: Recognized Sign Badge + Quick Utility Controls */}
+                  <div className="flex items-center gap-2 pointer-events-auto">
+                    {currentGesture && (
+                      <div
+                        key={currentGesture.id}
+                        className="bg-emerald-900/90 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-400/50 text-emerald-200 text-xs font-bold flex items-center gap-2 shadow-lg animate-in fade-in zoom-in-95 duration-200"
+                      >
+                        <span className="emoji text-sm">{currentGesture.icon}</span>
+                        <span>"{currentGesture.word}"</span>
+                        <span className="text-[10px] bg-emerald-500/30 px-1.5 py-0.5 rounded font-mono">
+                          {currentGesture.confidence}%
+                        </span>
+                        {currentGesture.isTwoHanded && (
+                          <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-mono">
+                            2-HANDS
+                          </span>
+                        )}
+                        {currentGesture.isCustom && (
+                          <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-mono">
+                            CUSTOM
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Framing guide toggle button */}
+                    <button
+                      onClick={() => setShowFramingGuide(!showFramingGuide)}
+                      className={`p-1.5 rounded-full border text-xs shadow-md transition-all cursor-pointer ${showFramingGuide
+                        ? "bg-slate-800/90 border-white/20 text-white hover:bg-slate-700"
+                        : "bg-black/60 border-white/10 text-white/60 hover:text-white"
+                        }`}
+                      title={showFramingGuide ? "Hide framing guide" : "Show framing guide"}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </button>
+
+                    {/* Fullscreen workspace toggle button */}
+                    <button
+                      onClick={toggleFullscreen}
+                      className="p-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-white/20 text-white shadow-md transition-all cursor-pointer"
+                      title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Workspace"}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {isFullscreen ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        )}
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Exterior Collapsible Quick Practice Strip ── */}
+                <div className="absolute bottom-3 left-3 right-3 z-20 pointer-events-none">
+                  {isQuickDrawerOpen ? (
+                    <div className="pointer-events-auto bg-slate-900/90 backdrop-blur-md p-2.5 rounded-xl border border-white/15 shadow-xl transition-all">
+                      <div className="text-[10px] uppercase font-bold text-slate-300 mb-1.5 px-1 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span className="emoji">✨</span>
+                          <span>Quick Reference Gestures:</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setViewMode("gallery")}
+                            className="text-blue-400 hover:underline font-semibold text-[11px] cursor-pointer"
+                          >
+                            <span>Browse All ({allGesturesList.length}) ↗</span>
+                          </button>
+                          <button
+                            onClick={() => setIsQuickDrawerOpen(false)}
+                            className="text-slate-400 hover:text-white text-xs px-2 py-0.5 rounded bg-slate-800 border border-white/10 cursor-pointer"
+                          >
+                            ▾ Close
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                        {allGesturesList.slice(0, 16).map((g) => (
+                          <button
+                            key={g.id}
+                            onClick={() => interpretSign(g)}
+                            className="px-2.5 py-1 bg-slate-800 hover:bg-signing-600 hover:text-white border border-slate-700 rounded-lg text-xs font-semibold text-slate-200 flex items-center gap-1.5 whitespace-nowrap transition-all shadow-xs cursor-pointer flex-shrink-0"
+                            title={`Sign "${g.name}"`}
+                          >
+                            <span className="emoji text-sm">{g.icon}</span>
+                            <span>{g.word}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-start pointer-events-auto">
+                      <button
+                        onClick={() => setIsQuickDrawerOpen(true)}
+                        className="bg-slate-900/80 hover:bg-slate-900 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 text-xs text-white font-medium flex items-center gap-1.5 shadow-md cursor-pointer transition-all hover:scale-102"
+                        title="Open Quick Practice panel"
+                      >
+                        <span className="emoji">✨</span>
+                        <span>Quick Signs (16) ▴</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
-            ) : null}
+            ) : (
+              /* ── Inactive Camera State (Clear, Helpful & Accessible) ── */
+              <div className="flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+                <div className="w-16 h-16 rounded-2xl bg-warm-100 dark:bg-slate-800 border border-warm-200 dark:border-slate-700 flex items-center justify-center text-3xl mb-4 shadow-subtle">
+                  <span>📹</span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-white mb-1.5">
+                  Sign Language Camera Workspace
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5">
+                  Position your camera to capture your signing space. MediaPipe tracks both hands and upper body movements to interpret gestures into spoken audio and text.
+                </p>
+                <button
+                  onClick={startCamera}
+                  className="px-5 py-2.5 bg-signing-600 hover:bg-signing-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-elevated flex items-center gap-2 transition-all hover:scale-102 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span>Start Camera</span>
+                </button>
+                <div className="mt-4 flex items-center gap-3 text-[11px] text-slate-400">
+                  <span className="flex items-center gap-1">✓ Full frame uncropped</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">✓ 1 or 2 hands</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">✓ Privacy secured</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* ── Interpreted Response Sentence & Voice Output Bar ────────────── */}
-      <div className="mt-2.5 flex-shrink-0 bg-blue-50/50 dark:bg-[#000000] p-2.5 rounded-xl border border-blue-200 dark:border-[#004AFF]/30 shadow-sm">
-        <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-[#DDE3E7] mb-1.5 px-0.5">
+      <div className="mt-2.5 flex-shrink-0 bg-warm-100/80 dark:bg-dark-card p-2.5 rounded-xl border border-warm-200 dark:border-dark-border shadow-xs">
+        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-dark-text mb-1.5 px-0.5">
           <span className="flex items-center gap-1.5">
             <span className="emoji">💬</span>
             <span>Interpreted Sentence:</span>
@@ -1297,7 +1400,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           {responseText && (
             <button
               onClick={() => setResponseText("")}
-              className="text-slate-400 hover:text-slate-600 dark:text-[#DDE3E7]/60 dark:hover:text-[#DDE3E7] text-[10px] font-normal cursor-pointer"
+              className="text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white text-[10px] font-normal cursor-pointer"
             >
               Clear
             </button>
@@ -1309,8 +1412,8 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
             type="text"
             value={responseText}
             onChange={(e) => setResponseText(e.target.value)}
-            placeholder="Sign with your hands in camera or select from Gallery..."
-            className="flex-1 px-3 py-2 text-xs sm:text-sm bg-white dark:bg-[#000000] border border-slate-300 dark:border-[#004AFF]/40 rounded-xl text-slate-800 dark:text-[#DDE3E7] placeholder-slate-400 dark:placeholder-[#DDE3E7]/40 focus:outline-none focus:ring-2 focus:ring-[#004AFF] shadow-inner font-medium"
+            placeholder="Sign into camera or select a sign to interpret into voice..."
+            className="flex-1 px-3 py-2 text-xs sm:text-sm bg-white dark:bg-dark-surface border border-warm-200 dark:border-dark-border rounded-xl text-slate-900 dark:text-dark-text placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-signing-500 shadow-xs font-medium"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -1322,15 +1425,14 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           <button
             onClick={handleSpeakResponse}
             disabled={!responseText.trim() || isSpeaking}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
-              isSpeaking
-                ? "bg-blue-500 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] animate-pulse"
-                : "bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white dark:text-[#DDE3E7] disabled:opacity-40 disabled:cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${isSpeaking
+              ? "bg-signing-500 text-white animate-pulse"
+              : "bg-signing-600 hover:bg-signing-700 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              }`}
             title="Speak response"
           >
             <span className="emoji text-base">🔊</span>
-            <span>{isSpeaking ? "Speaking..." : "Speak"}</span>
+            <span>{isSpeaking ? "Speaking…" : "Speak"}</span>
           </button>
         </div>
       </div>
@@ -1359,11 +1461,10 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
             </p>
 
             <div
-              className={`p-2 rounded-xl text-xs flex items-center gap-2 mb-3 border ${
-                handsDetectedCount > 0
-                  ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600 text-emerald-800 dark:text-emerald-200"
-                  : "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-200"
-              }`}
+              className={`p-2 rounded-xl text-xs flex items-center gap-2 mb-3 border ${handsDetectedCount > 0
+                ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600 text-emerald-800 dark:text-emerald-200"
+                : "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-200"
+                }`}
             >
               <span className="emoji">{handsDetectedCount > 0 ? "✅" : "⚠️"}</span>
               <span className="font-medium">
@@ -1410,11 +1511,10 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                       key={emoji}
                       type="button"
                       onClick={() => setTrainingIcon(emoji)}
-                      className={`w-7 h-7 rounded-lg text-base flex items-center justify-center transition-all cursor-pointer ${
-                        trainingIcon === emoji
-                          ? "bg-blue-600 dark:bg-[#004AFF] text-white scale-110 shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20"
-                      }`}
+                      className={`w-7 h-7 rounded-lg text-base flex items-center justify-center transition-all cursor-pointer ${trainingIcon === emoji
+                        ? "bg-blue-600 dark:bg-[#004AFF] text-white scale-110 shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20"
+                        }`}
                     >
                       <span className="emoji">{emoji}</span>
                     </button>

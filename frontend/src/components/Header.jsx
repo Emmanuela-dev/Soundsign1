@@ -1,118 +1,70 @@
-import ThemeToggle from './ThemeToggle';
-import Microphone from './Microphone';
+import React from "react";
+import ThemeToggle from "./ThemeToggle";
+import Microphone from "./Microphone";
 
-const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator", setMode }) => {
+const Header = ({
+  isRecording,
+  toggleRecording,
+  activeTab = "conversation",
+}) => {
+  const getTabTitle = () => {
+    switch (activeTab) {
+      case "camera":
+        return {
+          title: "Sign Camera Workspace",
+          subtitle: "Optical Hand Tracking · Real-Time Gesture-to-Speech",
+        };
+      case "library":
+        return {
+          title: "Sign Vocabulary Library",
+          subtitle: "151 Human Sign Demonstrations · Alphabet & Medical Lexicon",
+        };
+      case "conversation":
+      default:
+        return {
+          title: "Two-Way Conversation Bridge",
+          subtitle: "Speech & Sign Language Accessibility Interface",
+        };
+    }
+  };
+
+  const { title, subtitle } = getTabTitle();
+
   return (
-    <header className="relative bg-white/70 dark:bg-[#000000]/90 backdrop-blur-lg border-b border-white/20 dark:border-[#004AFF]/25 shadow-lg transition-colors duration-300">
-      <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
-        {/* Mobile Layout - Stacked */}
-        <div className="sm:hidden flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 
-                className="text-lg font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => window.location.reload()}
-              >
-                SoundSigns
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              {setMode && (
-                <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-0.5 rounded-lg border border-slate-200 dark:border-[#004AFF]/30 text-xs">
-                  <button
-                    onClick={() => setMode("translator")}
-                    className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                      mode === "translator"
-                        ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
-                        : "text-slate-500 dark:text-[#DDE3E7]/60 hover:dark:text-[#DDE3E7]"
-                    }`}
-                  >
-                    1-Way
-                  </button>
-                  <button
-                    onClick={() => setMode("twoway")}
-                    className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                      mode === "twoway"
-                        ? "bg-blue-600 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] shadow-xs"
-                        : "text-slate-500 dark:text-[#DDE3E7]/60 hover:dark:text-[#DDE3E7]"
-                    }`}
-                  >
-                    2-Way
-                  </button>
-                </div>
-              )}
-              <ThemeToggle />
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/20 dark:bg-[#004AFF]/20 rounded-full blur-lg animate-pulse"></div>
-              <div className="relative">
-                <Microphone
-                  isRecording={isRecording}
-                  toggleRecording={toggleRecording}
-                />
-              </div>
-            </div>
-          </div>
+    <header className="bg-white/80 dark:bg-dark-surface/90 backdrop-blur-md border-b border-warm-200 dark:border-dark-border px-4 py-2.5 transition-colors select-none">
+      <div className="flex items-center justify-between gap-4">
+        {/* Left: Section Header */}
+        <div className="min-w-0">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-dark-text tracking-tight truncate">
+            {title}
+          </h2>
+          <p className="text-[11px] text-slate-500 dark:text-dark-muted truncate hidden sm:block">
+            {subtitle}
+          </p>
         </div>
 
-        {/* Desktop Layout - Grid */}
-        <div className="hidden sm:grid grid-cols-12 items-center gap-3">
-          {/* Left - Title */}
-          <div className="col-span-4 min-w-0 flex items-center gap-3">
-            <h1 
-              className="text-xl md:text-2xl font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => window.location.reload()}
-            >
-              SoundSigns
-            </h1>
-          </div>
-
-          {/* Center - Microphone */}
-          <div className="col-span-4 justify-self-center">
+        {/* Center: Quick Microphone Control (Prominent in Conversation mode) */}
+        {activeTab === "conversation" && (
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/20 dark:bg-[#004AFF]/20 rounded-full blur-lg animate-pulse"></div>
-              <div className="relative">
-                <Microphone
-                  isRecording={isRecording}
-                  toggleRecording={toggleRecording}
-                />
-              </div>
+              <Microphone
+                isRecording={isRecording}
+                toggleRecording={toggleRecording}
+              />
             </div>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden md:inline">
+              {isRecording ? "Listening…" : "Click to Speak"}
+            </span>
           </div>
+        )}
 
-          {/* Right - Mode Switcher & Theme Toggle */}
-          <div className="col-span-4 justify-self-end flex items-center gap-2.5">
-            {setMode && (
-              <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-1 rounded-xl border border-slate-200 dark:border-[#004AFF]/30 shadow-xs">
-                <button
-                  onClick={() => setMode("translator")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    mode === "translator"
-                      ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-slate-900 dark:hover:text-[#DDE3E7]"
-                  }`}
-                  title="Speech to ISL Sign Translation"
-                >
-                  <span className="emoji">🤟</span>
-                  <span>Translate</span>
-                </button>
-                <button
-                  onClick={() => setMode("twoway")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    mode === "twoway"
-                      ? "bg-blue-600 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] shadow-xs"
-                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-slate-900 dark:hover:text-[#DDE3E7]"
-                  }`}
-                  title="Two-Way Conversation Bridge (Hearing ↔ Gesture)"
-                >
-                  <span className="emoji">🔄</span>
-                  <span>Two-Way</span>
-                </button>
-              </div>
-            )}
+        {/* Right: Status Pill & Theme Toggle */}
+        <div className="flex items-center gap-2.5">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warm-100 dark:bg-dark-card border border-warm-200 dark:border-dark-border text-[11px] font-mono text-slate-600 dark:text-slate-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Ready</span>
+          </div>
+          <div className="lg:hidden">
             <ThemeToggle />
           </div>
         </div>

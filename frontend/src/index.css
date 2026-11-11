@@ -2,27 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
+@layer base {
+  :root {
+    --bg-main: #FAF9F6;
+    --text-main: #191B1F;
+    --card-bg: #FFFFFF;
+    --border-subtle: #EAE6DF;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Dark Mode Theme System:
-   Background: #000000 (Pure OLED Black)
-   Texts: #DDE3E7 (Light Silver/Slate)
-   Addition Accent: #004AFF (Electric Royal Blue)
-   Leaving Emojis Yellow & colorful
+   Accessible, Warm Light Theme & Refined Dark Palette
    ───────────────────────────────────────────────────────────────────────────── */
 
 html.dark,
 .dark {
-  background-color: #000000 !important;
-  color: #DDE3E7;
+  --bg-main: #0B0F17;
+  --text-main: #F1F5F9;
+  --card-bg: #111827;
+  --border-subtle: #1F293D;
+  background-color: #0B0F17;
+  color: #F1F5F9;
 }
 
 .dark body {
-  background-color: #000000 !important;
-  color: #DDE3E7;
+  background-color: #0B0F17;
+  color: #F1F5F9;
+}
+
+/* Accessible focus rings */
+:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
 }
 
 /* Preserve natural colorful yellow emojis across all fonts and modes */
@@ -33,22 +52,30 @@ span[role="img"] {
   color: initial;
 }
 
-/* Dark mode scrollbars */
-.dark ::-webkit-scrollbar {
+/* Subtle, unobtrusive scrollbars */
+::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #000000;
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DCD6CB;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8B0A2;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #1a2234;
+  background: #1F293D;
   border-radius: 9999px;
-  border: 1px solid #004AFF40;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #004AFF;
+  background: #374151;
 }

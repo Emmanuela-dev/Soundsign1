@@ -15,12 +15,12 @@ const LiveTranscriptSection = ({ transcript, onSendText, isRecording }) => {
   };
 
   return (
-    <div className="bg-white/80 dark:bg-[#000000] backdrop-blur-xl rounded-2xl border border-white/30 dark:border-[#004AFF]/30 shadow-xl p-4 sm:p-5 transition-colors duration-300 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-blue-600 dark:bg-[#004AFF] rounded-xl flex items-center justify-center">
+    <div className="bg-white/95 dark:bg-dark-surface rounded-2xl border border-warm-200 dark:border-dark-border shadow-card p-3.5 sm:p-4 transition-colors duration-300 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-2.5 flex-shrink-0">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-7 h-7 bg-hearing-600 text-white rounded-xl flex items-center justify-center text-xs shadow-xs">
             <svg
-              className="w-5 h-5 text-white"
+              className="w-4 h-4 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -33,31 +33,31 @@ const LiveTranscriptSection = ({ transcript, onSendText, isRecording }) => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-[#DDE3E7] transition-colors duration-300">
-            Live Transcript
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-dark-text">
+            Live Speech Transcript
           </h3>
         </div>
-        <InfoTooltip content="This section shows real-time speech transcription or typed English. Type text below or use the mic button to translate and play signs." />
+        <InfoTooltip content="Shows real-time voice transcription or typed English. Type text below or speak with the microphone to translate into sign." />
       </div>
 
-      <div className="bg-slate-50 dark:bg-[#000000] rounded-xl p-4 border border-slate-200/50 dark:border-[#004AFF]/20 shadow-inner transition-colors duration-300 flex-1 min-h-0 overflow-auto">
+      <div className="bg-warm-50/70 dark:bg-dark-card rounded-xl p-3 border border-warm-200/60 dark:border-dark-border shadow-xs transition-colors duration-300 flex-1 min-h-0 overflow-auto">
         <Transcript transcript={transcript} />
       </div>
 
       {/* Quick typed text input bar */}
       {onSendText && (
-        <form onSubmit={handleSubmit} className="mt-3 flex items-center gap-2 flex-shrink-0">
+        <form onSubmit={handleSubmit} className="mt-2.5 flex items-center gap-2 flex-shrink-0">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={isRecording ? "Listening to your voice..." : "Type text to sign (e.g. Hello how are you)..."}
-            className="flex-1 px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#000000] border border-slate-200 dark:border-[#004AFF]/40 rounded-xl text-slate-800 dark:text-[#DDE3E7] placeholder-slate-400 dark:placeholder-[#DDE3E7]/40 focus:outline-none focus:ring-2 focus:ring-[#004AFF] transition-all"
+            placeholder={isRecording ? "Listening to your voice…" : "Type English text to sign (e.g. Hello, how are you)…"}
+            className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-dark-surface border border-warm-200 dark:border-dark-border rounded-xl text-slate-900 dark:text-dark-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-hearing-500 shadow-xs"
           />
           <button
             type="submit"
             disabled={!inputText.trim()}
-            className="px-3.5 py-2 text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white dark:text-[#DDE3E7] rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 text-xs font-semibold bg-hearing-600 hover:bg-hearing-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
           >
             <span>Sign</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

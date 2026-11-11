@@ -23,64 +23,70 @@ export default {
         ping: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
         spin: "spin 1s linear infinite",
       },
-      backdropBlur: {
-        xs: "2px",
-        sm: "4px",
-        md: "8px",
-        lg: "12px",
-        xl: "16px",
-        "2xl": "24px",
-        "3xl": "40px",
-      },
-      boxShadow: {
-        custom:
-          "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-        xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-        inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
-        // Dark mode shadows
-        'dark-lg': "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)",
-        'dark-xl': "0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
-      },
       colors: {
+        // Warm, light, human-centred design palette
+        warm: {
+          25: "#FDFCFB",
+          50: "#FAF9F6",
+          100: "#F5F3EF",
+          200: "#EAE6DF",
+          300: "#DCD6CB",
+          400: "#B8B0A2",
+          500: "#8E8678",
+          600: "#696356",
+          700: "#4D483E",
+          800: "#322E27",
+          900: "#1A1814",
+        },
+        // Speech & Hearing mode accent (calm, accessible teal)
+        hearing: {
+          50: "#F0FDFA",
+          100: "#CCFBF1",
+          200: "#99F6E4",
+          500: "#14B8A6",
+          600: "#0D9488",
+          700: "#0F766E",
+          800: "#115E59",
+        },
+        // Sign & Gesture mode accent (deep, accessible indigo)
+        signing: {
+          50: "#EEF2FF",
+          100: "#E0E7FF",
+          200: "#C7D2FE",
+          500: "#6366F1",
+          600: "#4F46E5",
+          700: "#4338CA",
+          800: "#3730A3",
+        },
+        // Institutional healthcare juniper/teal
+        juniper: {
+          50: "#F0FDF8",
+          100: "#DCFCEE",
+          200: "#BBF7DF",
+          600: "#0E4A40",
+          700: "#0B3C34",
+          800: "#082E28",
+          900: "#05201C",
+        },
+        // Refined dark mode neutrals (soft obsidian slate, avoiding harsh OLED glare)
         dark: {
-          bg: "#000000",
-          text: "#DDE3E7",
-          accent: "#004AFF",
-        },
-        emerald: {
-          25: "#f0fdf4",
-        },
-        teal: {
-          25: "#f0fdfa",
-        },
-        cyan: {
-          25: "#ecfeff",
-        },
-        slate: {
-          25: "#fcfcfd",
-          850: "#1e293b",
-          925: "#0f172a",
-        },
-        indigo: {
-          25: "#f8fafc",
-        },
-        sky: {
-          25: "#f0f9ff",
-        },
-        blue: {
-          25: "#eff6ff",
+          bg: "#0B0F17",
+          surface: "#111827",
+          card: "#161F30",
+          border: "#1F293D",
+          text: "#F1F5F9",
+          muted: "#94A3B8",
         },
       },
       borderRadius: {
+        "2xl": "1rem",
         "3xl": "1.5rem",
         "4xl": "2rem",
       },
-      spacing: {
-        18: "4.5rem",
-        88: "22rem",
-        128: "32rem",
+      boxShadow: {
+        subtle: "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)",
+        card: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03)",
+        elevated: "0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.04)",
       },
     },
   },

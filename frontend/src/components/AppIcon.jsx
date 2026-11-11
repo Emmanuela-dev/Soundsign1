@@ -1,0 +1,138 @@
+import React from 'react';
+import {
+  MessageSquare,
+  Camera,
+  BookOpen,
+  Stethoscope,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  RotateCcw,
+  Hand,
+  Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Heart,
+  Smile,
+  Activity,
+  HeartPulse,
+  Wind,
+  Droplet,
+  Pill,
+  AlertTriangle,
+  AlertCircle,
+  ShieldAlert,
+  CheckCircle2,
+  Search,
+  X,
+  ChevronRight,
+  ChevronDown,
+  Settings,
+  User,
+  Users,
+  Languages,
+  Info,
+  ExternalLink,
+  Eye,
+  Zap,
+  Check,
+  HelpCircle,
+  Thermometer,
+  PhoneCall,
+  Clock,
+  Radio,
+  Sliders,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+} from 'lucide-react';
+
+const ICON_MAP = {
+  // Navigation & Core
+  message: MessageSquare,
+  chat: MessageSquare,
+  camera: Camera,
+  library: BookOpen,
+  book: BookOpen,
+  medical: Stethoscope,
+  doctor: Stethoscope,
+  stethoscope: Stethoscope,
+  settings: Settings,
+  info: Info,
+  search: Search,
+  close: X,
+  check: Check,
+  'check-circle': CheckCircle2,
+  alert: AlertTriangle,
+  'alert-circle': AlertCircle,
+  shield: ShieldAlert,
+  clock: Clock,
+  refresh: RefreshCw,
+  sliders: Sliders,
+  maximize: Maximize2,
+  minimize: Minimize2,
+  language: Languages,
+
+  // Speech & Audio
+  mic: Mic,
+  'mic-off': MicOff,
+  volume: Volume2,
+  speaker: Volume2,
+  mute: VolumeX,
+  play: Play,
+  pause: Pause,
+  replay: RotateCcw,
+  radio: Radio,
+
+  // Clinical Symptoms & Triage
+  pain: Zap,
+  'heart-pulse': HeartPulse,
+  chest_pain: HeartPulse,
+  heart: Heart,
+  breathe: Wind,
+  wind: Wind,
+  bleed: Droplet,
+  droplet: Droplet,
+  dizzy: Activity,
+  activity: Activity,
+  medicine: Pill,
+  pill: Pill,
+  emergency: AlertTriangle,
+  help: HelpCircle,
+  thermometer: Thermometer,
+  fever: Thermometer,
+  phone: PhoneCall,
+
+  // Gestures & Hands
+  hand: Hand,
+  hands: Users,
+  'two-hands': Users,
+  sparkles: Sparkles,
+  'thumbs-up': ThumbsUp,
+  'thumbs-down': ThumbsDown,
+  thumbsup: ThumbsUp,
+  thumbsdown: ThumbsDown,
+  smile: Smile,
+  happy: Smile,
+  love: Heart,
+  peace: Hand,
+  wave: Hand,
+  point: Hand,
+  ok: CheckCircle2,
+};
+
+/**
+ * Clean semantic icon renderer replacing raw Unicode emojis across SoundSigns.
+ */
+export default function AppIcon({ name, size = 18, className = '', fallback = 'hand' }) {
+  if (!name) return null;
+
+  const key = String(name).toLowerCase().trim().replace(/\s+/g, '-');
+  const IconComponent = ICON_MAP[key] || ICON_MAP[fallback] || Sparkles;
+
+  return <IconComponent size={size} className={className} aria-hidden="true" />;
+}
+

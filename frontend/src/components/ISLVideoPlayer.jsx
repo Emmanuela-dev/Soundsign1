@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Hand } from "lucide-react";
 import { getVideoSource } from "./videoUtils";
 import { getCachedSrc } from "../hooks/useVideoPreloader";
 
@@ -276,11 +277,11 @@ const ISLVideoPlayer = ({
 
         {/* Running signs ticker */}
         <div className="flex-1 h-9 flex items-center gap-1.5 overflow-x-auto px-2
-                        bg-slate-100 dark:bg-black/60 border border-slate-200
-                        dark:border-slate-700/40 rounded-lg">
+                        bg-warm-100 dark:bg-dark-card border border-warm-200
+                        dark:border-dark-border rounded-xl">
           {recentSigns.length === 0
             ? <span className="text-xs text-slate-400 italic whitespace-nowrap">
-                Signs appear here as you speak…
+                Spoken signs appear here in sequence…
               </span>
             : recentSigns.map((s, i) => {
                 const cur = i === recentSigns.length - 1;
@@ -288,8 +289,8 @@ const ISLVideoPlayer = ({
                   <span key={i} className={`px-2 py-0.5 rounded-full text-xs font-semibold
                     flex-shrink-0 transition-all duration-75 ${
                       cur
-                        ? "bg-green-500 text-white scale-110 shadow"
-                        : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300"
+                        ? "bg-hearing-600 text-white scale-105 shadow-xs"
+                        : "bg-warm-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                     }`}>
                     {s}
                   </span>
@@ -299,9 +300,9 @@ const ISLVideoPlayer = ({
         </div>
 
         {/* Speed selector */}
-        <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-black/60
-                        border border-slate-200 dark:border-slate-700/40
-                        px-1.5 py-1 rounded-lg flex-shrink-0">
+        <div className="flex items-center gap-0.5 bg-warm-100 dark:bg-dark-card
+                        border border-warm-200 dark:border-dark-border
+                        px-1.5 py-1 rounded-xl flex-shrink-0">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">
             Speed:
           </span>
@@ -312,18 +313,18 @@ const ISLVideoPlayer = ({
             { id: 2.0,   label: "2×"      },
           ].map(m => (
             <button key={m.id} onClick={() => setSpeedMode(m.id)}
-              className={`px-2 py-0.5 text-xs font-medium rounded-md transition-all ${
+              className={`px-2 py-0.5 text-xs font-semibold rounded-lg transition-all ${
                 speedMode === m.id
-                  ? "bg-emerald-600 text-white font-bold shadow"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  ? "bg-hearing-600 text-white font-bold shadow-xs"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-warm-200 dark:hover:bg-slate-700"
               }`}>
               {m.label}
             </button>
           ))}
           <button onClick={toggleFs} title="Fullscreen"
-            className="ml-1 p-1 rounded text-slate-500 hover:text-slate-800
+            className="ml-1 p-1 rounded-lg text-slate-500 hover:text-slate-800
                        dark:text-slate-400 dark:hover:text-white
-                       hover:bg-slate-200 dark:hover:bg-slate-700">
+                       hover:bg-warm-200 dark:hover:bg-slate-700 cursor-pointer">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isFullscreen
                 ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -338,20 +339,23 @@ const ISLVideoPlayer = ({
 
       {/* ── Video stage ─────────────────────────────────────────────────── */}
       <div ref={stageRef}
-           className={`flex-1 relative bg-black overflow-hidden flex items-center
-                       justify-center min-h-[380px] sm:min-h-[440px] xl:min-h-0
-                       ${isFullscreen ? "rounded-none" : "rounded-xl"}`}>
+           className={`flex-1 relative bg-slate-950 overflow-hidden flex items-center
+                       justify-center min-h-[360px] sm:min-h-[420px] xl:min-h-0
+                       border border-warm-200/20 dark:border-dark-border
+                       ${isFullscreen ? "rounded-none" : "rounded-2xl"}`}>
 
         {/* Idle placeholder */}
         {!isActive && (
           <div className="absolute inset-0 flex flex-col items-center justify-center
-                          pointer-events-none text-center px-4 z-10">
-            <div className="text-6xl mb-3 select-none">🤟</div>
-            <p className="text-sm font-semibold text-slate-300">
-              Speak — signs play the moment you talk
+                          pointer-events-none text-center px-4 z-10 select-none">
+            <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center mb-3 shadow-inner">
+              <Hand size={28} />
+            </div>
+            <p className="text-sm font-semibold text-slate-200">
+              Signs play in real-time as you speak
             </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Click the microphone and start speaking
+            <p className="text-xs text-slate-400 mt-1">
+              Click the microphone button above to start
             </p>
           </div>
         )}

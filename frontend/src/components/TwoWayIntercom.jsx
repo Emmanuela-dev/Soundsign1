@@ -1,7 +1,26 @@
 import React, { useState } from "react";
 import ISLVideoSection from "./ISLVideoSection";
 import GestureTerminal from "./GestureTerminal";
+import ClinicalHeroIllustration from "./ClinicalHeroIllustration";
+import ClinicalTriagePanel from "./ClinicalTriagePanel";
 import { speakText } from "./ttsUtils";
+import {
+  Mic,
+  Hand,
+  Volume2,
+  Play,
+  RotateCcw,
+  MessageSquare,
+  Stethoscope,
+  ChevronDown,
+  ChevronUp,
+  Columns,
+  Maximize2,
+  Sparkles,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function TwoWayIntercom({
   signQueueRef,
@@ -16,9 +35,9 @@ export default function TwoWayIntercom({
   conversationHistory = [],
   onAddMessage,
 }) {
-  const [activeMode, setActiveMode] = useState("split");
+  const [activeRole, setActiveRole] = useState("split"); // "hearing" | "gesture" | "split"
+  const [showWelcomeHero, setShowWelcomeHero] = useState(true);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(true);
-  const [selectedPain, setSelectedPain] = useState(null);
 
   // Play subtle clinical chime tone
   const playClinicalAlertTone = () => {
@@ -36,155 +55,211 @@ export default function TwoWayIntercom({
       osc.start();
       osc.stop(audioCtx.currentTime + 0.45);
     } catch {
-      // AudioContext not supported or uninitialized
+      // AudioContext uninitialized
     }
   };
 
-  const handleSelectPainScale = (level) => {
-    setSelectedPain(level);
-    let severity = "Mild";
-    if (level >= 4 && level <= 6) severity = "Moderate";
-    if (level >= 7) severity = "Severe";
-    const painText = `Patient reports Pain Level: ${level}/10 (${severity})`;
-
+  const handleTriagePhrase = (item) => {
     playClinicalAlertTone();
     if (onAddMessage) {
       onAddMessage({
         sender: "gesture",
-        text: painText,
+        text: item.text,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isClinical: true,
-        painLevel: level,
+        label: item.label,
       });
     }
-    speakText(`Patient reports pain level ${level} out of 10, ${severity}`, "gentle");
-  };
-
-  const CLINICAL_PRESETS = [
-    { label: "📍 Pain Location", text: "Where does it hurt?" },
-    { label: "📊 Rate Pain 1-10", text: "How severe is your pain from 1 to 10?" },
-    { label: "⚠️ Any Allergies?", text: "Do you have any allergies?" },
-    { label: "💊 Take Medicine", text: "Please take this medicine after eating" },
-    { label: "🫁 Breathe Slowly", text: "Please stay still and breathe slowly" },
-  ];
-
-  // Auto-collapse timeline when entering gesture-only mode to maximise camera space
-  const handleSetMode = (mode) => {
-    setActiveMode(mode);
-    if (mode === "gesture") setIsTimelineExpanded(false);
-    else setIsTimelineExpanded(true);
   };
 
   const hearingCount = conversationHistory.filter((m) => m.sender === "hearing").length;
   const gestureCount = conversationHistory.filter((m) => m.sender === "gesture").length;
 
   return (
-    <div className="w-full h-full flex flex-col gap-2.5 sm:gap-3 min-h-0 overflow-hidden font-inter">
-      {/* ── Top Mode Selector Bar (Hearing Mode / Gesture Mode / Split View) ── */}
-      <div className="flex-shrink-0 bg-white/80 dark:bg-[#000000] backdrop-blur-md px-3 py-2 rounded-2xl border border-white/40 dark:border-[#004AFF]/30 shadow-md flex items-center justify-between gap-2 transition-colors duration-300">
-        {/* Mode Selection Tabs */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="text-xs font-bold text-slate-500 dark:text-[#DDE3E7]/70 mr-1 hidden sm:inline">
-            Choose Mode:
-          </span>
+    <div className="w-full h-full flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5 font-inter select-none">
+      
+      {/* ── 1. Dual-Role Emergency Quick-Start Header ── */}
+      <section className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/90 dark:border-dark-border p-3 sm:p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100 dark:border-dark-border">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Stethoscope size={14} className="text-teal-600" />
+                Hospital Emergency & Triage Encounter
+              </span>
+              <span className="text-[10px] bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-semibold px-2 py-0.5 rounded-full border border-teal-200/70">
+                Active Protocol
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-dark-muted mt-0.5">
+              Select your role below to optimize the interface for immediate mutual communication
+            </p>
+          </div>
 
-          {/* Split View Button */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={() => setShowWelcomeHero((prev) => !prev)}
+              className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-dark-border hover:bg-slate-50 transition-colors"
+            >
+              <Info size={13} />
+              <span>{showWelcomeHero ? "Hide Overview" : "Show Overview"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Role Switcher Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          {/* Clinician Card */}
           <button
-            onClick={() => handleSetMode("split")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeMode === "split"
-                ? "bg-slate-900 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7] shadow-md shadow-[#004AFF]/20 scale-102"
-                : "text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-slate-200 dark:hover:bg-[#004AFF]/15 hover:dark:text-[#DDE3E7]"
+            type="button"
+            onClick={() => setActiveRole("hearing")}
+            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+              activeRole === "hearing"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 shadow-sm ring-2 ring-teal-500 ring-offset-1"
+                : "bg-slate-50 dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-slate-800/80 border-slate-200 dark:border-dark-border text-slate-800 dark:text-slate-100"
             }`}
-            title="View both Hearing and Gesture consoles side-by-side"
           >
-            <span className="emoji text-sm">🔄</span>
-            <span>Split View (Dual Mode)</span>
+            <div className={`p-2 rounded-xl flex-shrink-0 ${
+              activeRole === "hearing" ? "bg-teal-600 text-white" : "bg-white text-teal-700 shadow-xs border border-slate-200"
+            }`}>
+              <Mic size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold tracking-tight flex items-center gap-1.5">
+                <span>I am Speaking (Clinician)</span>
+                {activeRole === "hearing" && <CheckCircle2 size={13} className="text-teal-400" />}
+              </div>
+              <p className={`text-[11px] mt-0.5 leading-snug truncate ${
+                activeRole === "hearing" ? "text-slate-300 dark:text-slate-600" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                Speech translates to sign video demonstration for patient
+              </p>
+            </div>
           </button>
 
-          {/* Hearing Mode Button */}
+          {/* Deaf Patient Card */}
           <button
-            onClick={() => handleSetMode("hearing")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeMode === "hearing"
-                ? "bg-emerald-600 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] shadow-md dark:shadow-[#004AFF]/30 scale-102 ring-2 ring-emerald-400/50 dark:ring-[#004AFF]/60"
-                : "text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-emerald-50 dark:hover:bg-[#004AFF]/15 hover:dark:text-[#DDE3E7]"
+            type="button"
+            onClick={() => setActiveRole("gesture")}
+            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+              activeRole === "gesture"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 shadow-sm ring-2 ring-teal-500 ring-offset-1"
+                : "bg-slate-50 dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-slate-800/80 border-slate-200 dark:border-dark-border text-slate-800 dark:text-slate-100"
             }`}
-            title="Focus solely on Hearing Mode: Speech to Sign Avatar"
           >
-            <span className="emoji text-sm">🗣️</span>
-            <span>Hearing Mode</span>
-            {hearingCount > 0 && (
-              <span className="text-[10px] bg-black/20 dark:bg-white/20 px-1.5 py-0.2 rounded-full">
-                {hearingCount}
-              </span>
-            )}
+            <div className={`p-2 rounded-xl flex-shrink-0 ${
+              activeRole === "gesture" ? "bg-teal-600 text-white" : "bg-white text-teal-700 shadow-xs border border-slate-200"
+            }`}>
+              <Hand size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold tracking-tight flex items-center gap-1.5">
+                <span>I am Signing (Deaf Patient)</span>
+                {activeRole === "gesture" && <CheckCircle2 size={13} className="text-teal-400" />}
+              </div>
+              <p className={`text-[11px] mt-0.5 leading-snug truncate ${
+                activeRole === "gesture" ? "text-slate-300 dark:text-slate-600" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                Optical sign recognition and 1-touch triage speak aloud
+              </p>
+            </div>
           </button>
 
-          {/* Gesture Mode Button */}
+          {/* Dual Split Bridge */}
           <button
-            onClick={() => handleSetMode("gesture")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeMode === "gesture"
-                ? "bg-blue-600 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] shadow-md dark:shadow-[#004AFF]/30 scale-102 ring-2 ring-blue-400/50 dark:ring-[#004AFF]/60"
-                : "text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-blue-50 dark:hover:bg-[#004AFF]/15 hover:dark:text-[#DDE3E7]"
+            type="button"
+            onClick={() => setActiveRole("split")}
+            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+              activeRole === "split"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 shadow-sm ring-2 ring-teal-500 ring-offset-1"
+                : "bg-slate-50 dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-slate-800/80 border-slate-200 dark:border-dark-border text-slate-800 dark:text-slate-100"
             }`}
-            title="Focus solely on Gesture Mode: Camera Sign Language Interpreter & Voice Output"
           >
-            <span className="emoji text-sm">🤟</span>
-            <span>Gesture Mode (Camera & Video)</span>
-            {gestureCount > 0 && (
-              <span className="text-[10px] bg-black/20 dark:bg-white/20 px-1.5 py-0.2 rounded-full">
-                {gestureCount}
-              </span>
-            )}
+            <div className={`p-2 rounded-xl flex-shrink-0 ${
+              activeRole === "split" ? "bg-teal-600 text-white" : "bg-white text-teal-700 shadow-xs border border-slate-200"
+            }`}>
+              <Columns size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold tracking-tight flex items-center gap-1.5">
+                <span>Face-to-Face Dual Bridge</span>
+                {activeRole === "split" && <CheckCircle2 size={13} className="text-teal-400" />}
+              </div>
+              <p className={`text-[11px] mt-0.5 leading-snug truncate ${
+                activeRole === "split" ? "text-slate-300 dark:text-slate-600" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                Both speech and signing camera displayed side-by-side
+              </p>
+            </div>
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* ── Main Dual/Single Console Stage ── */}
-      {/* Use flex row for split, single flex child for solo modes — avoids grid h-full resolution issues */}
-      <div className={`flex-1 min-h-0 overflow-hidden ${
-        activeMode === "split" ? "flex flex-row gap-3 sm:gap-4" : "flex flex-col"
-      }`}>
-
-        {/* ── Hearing Terminal ── */}
-        {(activeMode === "hearing" || activeMode === "split") && (
-          <div className={`flex flex-col min-h-0 overflow-hidden ${
-            activeMode === "split" ? "flex-1" : "flex-1"
-          }`}>
-            {/* Header pill */}
-            <div className="flex items-center justify-between mb-1.5 px-1 flex-shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-bold text-emerald-700 dark:text-[#DDE3E7] flex items-center gap-1.5 truncate">
-                  <span className="emoji">🗣️</span>
-                  <span className="hidden sm:inline">HEARING MODE (Speech & Text → Sign Avatar)</span>
-                  <span className="sm:hidden">HEARING MODE</span>
-                </span>
-                <span className="text-[10px] bg-emerald-100 dark:bg-[#004AFF]/20 text-emerald-800 dark:text-[#DDE3E7] dark:border dark:border-[#004AFF]/40 px-2 py-0.5 rounded-full font-mono flex-shrink-0 hidden sm:inline">
-                  ISL Video Engine
-                </span>
+      {/* ── 2. Clinical Welcome Hero Illustration (Collapsible) ── */}
+      {showWelcomeHero && (
+        <section className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/90 dark:border-dark-border p-4 shadow-xs">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="w-full md:w-1/2">
+              <ClinicalHeroIllustration className="w-full h-auto max-h-48" />
+            </div>
+            <div className="w-full md:w-1/2 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-xs font-semibold">
+                <Sparkles size={13} />
+                <span>Zero-Barrier Clinical Care</span>
               </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                {activeMode === "split" ? (
-                  <button onClick={() => handleSetMode("hearing")}
-                    className="text-[11px] text-slate-500 hover:text-emerald-600 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span>⛶ Maximize</span>
-                  </button>
-                ) : (
-                  <button onClick={() => handleSetMode("split")}
-                    className="text-[11px] text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span className="emoji">🔄</span> Split View
-                  </button>
-                )}
-                {activeMode !== "gesture" && (
-                  <button onClick={() => handleSetMode("gesture")}
-                    className="text-[11px] text-blue-600 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer pl-2 border-l border-slate-300 dark:border-[#004AFF]/30">
-                    <span className="emoji">🤟</span> Gesture →
-                  </button>
-                )}
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                Immediate mutual understanding in high-stress medical moments.
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                SoundSigns connects hearing medical personnel and Deaf patients. Clinicians can speak naturally to produce synchronized sign video, while patients can express symptoms instantly through hand gestures or one-touch visual triage cards.
+              </p>
+              <div className="flex items-center gap-3 pt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 size={13} className="text-teal-600" />
+                  <span>151 Verified Sign Videos</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 size={13} className="text-teal-600" />
+                  <span>21-Landmark Optical Tracking</span>
+                </span>
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 3. 1-Touch Emergency Triage & Pain Severity Scale ── */}
+      <ClinicalTriagePanel onTriggerPhrase={handleTriagePhrase} />
+
+      {/* ── 4. Main Dual / Focused Communication Stage ── */}
+      <div
+        className={`flex-1 min-h-[420px] ${
+          activeRole === "split" ? "flex flex-col xl:flex-row gap-3" : "flex flex-col"
+        }`}
+      >
+        {/* Clinician Speech to Sign Stage */}
+        {(activeRole === "hearing" || activeRole === "split") && (
+          <div className="flex-1 min-h-[360px] flex flex-col bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/90 dark:border-dark-border p-3.5 shadow-xs">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100 dark:border-dark-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+                  <Mic size={14} />
+                </div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white tracking-tight">
+                  Clinician Speech & Sign Translation Stage
+                </span>
+              </div>
+              {activeRole === "split" && (
+                <button
+                  onClick={() => setActiveRole("hearing")}
+                  className="text-[11px] text-teal-700 hover:text-teal-900 dark:text-teal-400 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <Maximize2 size={12} />
+                  <span>Expand</span>
+                </button>
+              )}
+            </div>
+
             <div className="flex-1 min-h-0">
               <ISLVideoSection
                 signQueueRef={signQueueRef}
@@ -200,145 +275,84 @@ export default function TwoWayIntercom({
           </div>
         )}
 
-        {/* ── Gesture Terminal ── */}
-        {(activeMode === "gesture" || activeMode === "split") && (
-          <div className={`flex flex-col min-h-0 overflow-hidden ${
-            activeMode === "split" ? "flex-1" : "flex-1"
-          }`}>
-            {/* Header pill */}
-            <div className="flex items-center justify-between mb-1.5 px-1 flex-shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-bold text-blue-700 dark:text-[#DDE3E7] flex items-center gap-1.5 truncate">
-                  <span className="emoji">🤟</span>
-                  <span className="hidden sm:inline">GESTURE MODE (Camera & Video Sign Interpreter → Spoken Audio)</span>
-                  <span className="sm:hidden">GESTURE MODE</span>
-                </span>
-                <span className="text-[10px] bg-blue-100 dark:bg-[#004AFF]/20 text-blue-800 dark:text-[#DDE3E7] dark:border dark:border-[#004AFF]/40 px-2 py-0.5 rounded-full font-mono flex-shrink-0 hidden sm:inline">
-                  Optical AR & Video Ground Truth
+        {/* Deaf Patient Sign Camera Stage */}
+        {(activeRole === "gesture" || activeRole === "split") && (
+          <div className="flex-1 min-h-[360px] flex flex-col bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/90 dark:border-dark-border p-3.5 shadow-xs">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100 dark:border-dark-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+                  <Hand size={14} />
+                </div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white tracking-tight">
+                  Patient Sign Camera & Speech Vocalizer
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                {activeMode === "split" ? (
-                  <button onClick={() => handleSetMode("gesture")}
-                    className="text-[11px] text-slate-500 hover:text-blue-600 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span>⛶ Maximize</span>
-                  </button>
-                ) : (
-                  <button onClick={() => handleSetMode("split")}
-                    className="text-[11px] text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span className="emoji">🔄</span> Split View
-                  </button>
-                )}
-                {activeMode !== "hearing" && (
-                  <button onClick={() => handleSetMode("hearing")}
-                    className="text-[11px] text-emerald-600 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer pl-2 border-l border-slate-300 dark:border-[#004AFF]/30">
-                    <span className="emoji">🗣️</span> Hearing →
-                  </button>
-                )}
-              </div>
+              {activeRole === "split" && (
+                <button
+                  onClick={() => setActiveRole("gesture")}
+                  className="text-[11px] text-teal-700 hover:text-teal-900 dark:text-teal-400 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <Maximize2 size={12} />
+                  <span>Expand</span>
+                </button>
+              )}
             </div>
+
             <div className="flex-1 min-h-0">
               <GestureTerminal
                 onSendMessage={onAddMessage}
-                isFullFocus={activeMode === "gesture"}
+                isFullFocus={activeRole === "gesture"}
               />
             </div>
           </div>
         )}
-
       </div>
 
-      {/* ── MedSoundSigns Clinical Triage & Pain Scale HUD ── */}
-      <div className="flex-shrink-0 bg-slate-900/90 dark:bg-[#000000] border border-blue-500/30 dark:border-[#004AFF]/40 rounded-xl px-3 py-2 flex flex-col md:flex-row items-center justify-between gap-2 shadow-sm text-xs">
-        {/* Pain Scale (1 to 10) */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-slate-300 dark:text-[#DDE3E7] flex items-center gap-1 text-[11px]">
-            <span>🩺 Pain Scale:</span>
-          </span>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
-              const isSelected = selectedPain === num;
-              let bg = "bg-slate-800 text-slate-300 hover:bg-slate-700";
-              if (num <= 3) {
-                if (isSelected) bg = "bg-emerald-600 text-white font-bold ring-2 ring-emerald-400";
-              } else if (num <= 6) {
-                if (isSelected) bg = "bg-amber-600 text-white font-bold ring-2 ring-amber-400";
-              } else {
-                if (isSelected) bg = "bg-rose-600 text-white font-bold ring-2 ring-rose-400";
-              }
-              return (
-                <button
-                  key={num}
-                  onClick={() => handleSelectPainScale(num)}
-                  className={`w-6 h-6 rounded-md text-[11px] flex items-center justify-center transition-all cursor-pointer ${bg}`}
-                  title={`Record pain level ${num}/10`}
-                >
-                  {num}
-                </button>
-              );
-            })}
-          </div>
-          <span className="text-[10px] text-slate-400 hidden lg:inline">
-            (1-3: Mild · 4-6: Mod · 7-10: Severe)
-          </span>
-        </div>
-
-        {/* Doctor Quick Triage Prompts */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] text-slate-400 hidden xl:inline">Doctor Prompts:</span>
-          {CLINICAL_PRESETS.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => submitText && submitText(p.text)}
-              className="text-[10px] px-2 py-1 rounded-lg bg-blue-950/60 hover:bg-blue-900 border border-blue-500/30 text-blue-200 transition-colors cursor-pointer"
-              title={`Ask patient: "${p.text}"`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Bottom Half: Shared Real-Time Conversation Timeline ── */}
-      <div
-        className={`flex-shrink-0 bg-white/75 dark:bg-[#000000] backdrop-blur-md rounded-2xl border border-white/40 dark:border-[#004AFF]/30 shadow-lg p-2.5 sm:p-3 flex flex-col overflow-hidden transition-all duration-300 ${
-          isTimelineExpanded ? "h-40 sm:h-48" : "h-11"
+      {/* ── 5. Clean Conversation Dialogue Timeline ── */}
+      <section
+        className={`bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/90 dark:border-dark-border shadow-xs p-3.5 sm:p-4 flex flex-col transition-all duration-300 ${
+          isTimelineExpanded ? "h-64 sm:h-72" : "h-12"
         }`}
       >
-        <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-200 dark:border-[#004AFF]/25 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-[#DDE3E7] flex items-center gap-1.5">
-              <span className="emoji">💬</span> Two-Way Conversation Timeline
-            </span>
-            <span className="text-[10px] bg-slate-100 dark:bg-[#004AFF]/20 dark:border dark:border-[#004AFF]/30 px-2 py-0.5 rounded-full text-slate-500 dark:text-[#DDE3E7] font-mono">
-              {conversationHistory.length} msgs
-            </span>
-            <div className="hidden sm:flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="text-emerald-600 dark:text-[#004AFF] font-semibold"><span className="emoji">🗣️</span> {hearingCount}</span>
-              <span>·</span>
-              <span className="text-blue-600 dark:text-[#DDE3E7] font-semibold"><span className="emoji">🤟</span> {gestureCount}</span>
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-dark-border flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+              <MessageSquare size={14} />
             </div>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+              Encounter Dialogue Log
+            </span>
+            <span className="text-[10px] bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 font-medium">
+              {conversationHistory.length} exchanges
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400 dark:text-[#DDE3E7]/60 hidden md:inline">
-              Click <span className="emoji">🔊</span> to hear voice or <span className="emoji">▶</span> to replay sign
-            </span>
             <button
               onClick={() => setIsTimelineExpanded((prev) => !prev)}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#DDE3E7] font-semibold px-2 py-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#004AFF]/20 cursor-pointer transition-colors"
-              title={isTimelineExpanded ? "Minimize timeline" : "Expand timeline"}
+              className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-semibold flex items-center gap-1 px-2 py-0.5 rounded-lg hover:bg-slate-100 transition-colors"
             >
-              {isTimelineExpanded ? "▾ Hide" : "▴ Show History"}
+              {isTimelineExpanded ? (
+                <>
+                  <ChevronDown size={14} />
+                  <span>Minimize</span>
+                </>
+              ) : (
+                <>
+                  <ChevronUp size={14} />
+                  <span>Show History</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
         {isTimelineExpanded && (
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
             {conversationHistory.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-[#DDE3E7]/60 italic">
-                Speak with microphone in Hearing Mode or sign into camera in Gesture Mode to start conversation…
+              <div className="h-full flex flex-col items-center justify-center text-xs text-slate-400 italic gap-1">
+                <span>No conversation logged yet.</span>
+                <span className="text-[11px] not-italic text-slate-400">Speak into the microphone, sign into the camera, or tap a triage symptom above.</span>
               </div>
             ) : (
               conversationHistory.map((msg, index) => {
@@ -346,54 +360,52 @@ export default function TwoWayIntercom({
                 return (
                   <div
                     key={index}
-                    className={`flex items-start gap-2 ${
+                    className={`flex items-start gap-2.5 ${
                       isHearing ? "justify-start" : "justify-end"
                     }`}
                   >
                     {isHearing && (
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-[#004AFF]/30 text-emerald-700 dark:text-[#DDE3E7] flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        <span className="emoji">🗣️</span>
+                      <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <Mic size={14} />
                       </div>
                     )}
 
                     <div
-                      className={`max-w-[75%] rounded-xl px-3 py-1.5 text-xs shadow-xs ${
+                      className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-xs shadow-2xs border ${
                         isHearing
-                          ? "bg-emerald-50 dark:bg-[#004AFF]/15 border border-emerald-200 dark:border-[#004AFF]/40 text-emerald-900 dark:text-[#DDE3E7]"
-                          : "bg-blue-50 dark:bg-[#000000] border border-blue-200 dark:border-[#004AFF]/50 text-blue-900 dark:text-[#DDE3E7]"
+                          ? "bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-900/40 dark:border-slate-800 dark:text-slate-100"
+                          : "bg-teal-50/70 border-teal-200 text-slate-900 dark:bg-teal-950/30 dark:border-teal-800 dark:text-slate-100"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3 text-[10px] opacity-70 mb-0.5 font-semibold">
+                      <div className="flex items-center justify-between gap-3 text-[10px] text-slate-500 mb-1 font-semibold">
                         <span className="flex items-center gap-1.5">
-                          <span>{isHearing ? "Doctor / Clinician (Voice)" : "DHH Patient (Sign)"}</span>
+                          <span>{isHearing ? "Clinician (Speech)" : "Patient (Sign / Triage)"}</span>
                           {msg.isClinical && (
-                            <span className="bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/40 px-1.5 py-0.2 rounded-full text-[9px] font-bold">
-                              🩺 Clinical Triage
+                            <span className="bg-rose-100 text-rose-800 border border-rose-200 px-1.5 py-0.2 rounded-full text-[9px] font-bold">
+                              Clinical Triage
                             </span>
                           )}
                         </span>
-                        <span>{msg.timestamp}</span>
+                        <span className="font-mono text-slate-400">{msg.timestamp}</span>
                       </div>
 
-                      <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
+                      <p className="text-xs sm:text-sm font-medium leading-relaxed">{msg.text}</p>
 
-                      {/* Action buttons */}
-                      <div className="mt-1 pt-1 border-t border-black/5 dark:border-white/10 flex items-center gap-2">
+                      <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center gap-3">
                         {isHearing ? (
                           <button
                             onClick={() => playText && playText(msg.text)}
-                            className="text-[10px] text-emerald-600 dark:text-[#004AFF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                            className="text-[11px] text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                           >
-                            <span className="emoji">▶</span>
-                            <span>Sign Again</span>
+                            <Play size={12} />
+                            <span>Replay Sign Video</span>
                           </button>
                         ) : (
                           <button
-                            onClick={() => speakText(msg.text, "soft")}
-                            className="text-[10px] text-blue-600 dark:text-[#004AFF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-                            title="Hear in soft human voice"
+                            onClick={() => speakText(msg.text, "gentle")}
+                            className="text-[11px] text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                           >
-                            <span className="emoji">🔊</span>
+                            <Volume2 size={12} />
                             <span>Hear Voice</span>
                           </button>
                         )}
@@ -401,8 +413,8 @@ export default function TwoWayIntercom({
                     </div>
 
                     {!isHearing && (
-                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-[#004AFF]/30 text-blue-700 dark:text-[#DDE3E7] flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        <span className="emoji">🤟</span>
+                      <div className="w-7 h-7 rounded-lg bg-teal-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <Hand size={14} />
                       </div>
                     )}
                   </div>
@@ -411,7 +423,7 @@ export default function TwoWayIntercom({
             )}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

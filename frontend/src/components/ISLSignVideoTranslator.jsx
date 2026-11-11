@@ -5,24 +5,24 @@ import { getCachedSrc } from "../hooks/useVideoPreloader";
 
 // ── Essential high-frequency signs with rich descriptions ──────────────────
 export const POPULAR_SIGNS = [
-  { word: "Hello", icon: "👋", category: "Greetings", path: "/videos/words/Hello.mp4", description: "Open hand waved upright with palm facing forward" },
-  { word: "Thank You", icon: "🙏", category: "Courtesies", path: "/videos/words/Thank You.mp4", description: "Hand moves outward from chin/chest towards the recipient" },
-  { word: "Welcome", icon: "🤗", category: "Greetings", path: "/videos/words/Welcome.mp4", description: "Both open hands extended forward in a warm welcoming arc" },
-  { word: "Good", icon: "👍", category: "Expressions", path: "/videos/words/Good.mp4", description: "Hand moves from lips forward into affirmative gesture" },
-  { word: "Help", icon: "🤝", category: "Essential", path: "/videos/words/Help.mp4", description: "Fist placed on flat palm and lifted upward together" },
+  { word: "Hello", icon: "wave", category: "Greetings", path: "/videos/words/Hello.mp4", description: "Open hand waved upright with palm facing forward" },
+  { word: "Thank You", icon: "heart", category: "Courtesies", path: "/videos/words/Thank You.mp4", description: "Hand moves outward from chin/chest towards the recipient" },
+  { word: "Welcome", icon: "hands", category: "Greetings", path: "/videos/words/Welcome.mp4", description: "Both open hands extended forward in a warm welcoming arc" },
+  { word: "Good", icon: "thumbsup", category: "Expressions", path: "/videos/words/Good.mp4", description: "Hand moves from lips forward into affirmative gesture" },
+  { word: "Help", icon: "hand", category: "Essential", path: "/videos/words/Help.mp4", description: "Fist placed on flat palm and lifted upward together" },
   { word: "Right", icon: "✅", category: "Expressions", path: "/videos/words/Right.mp4", description: "Affirmative sign confirming correctness or agreement" },
-  { word: "Not", icon: "🚫", category: "Expressions", path: "/videos/words/Not.mp4", description: "Thumb flicks forward from under chin to indicate negation" },
-  { word: "Eat", icon: "🍽️", category: "Daily Life", path: "/videos/words/Eat.mp4", description: "Bunched fingertips bring food gesture towards mouth" },
-  { word: "Talk", icon: "🗣️", category: "Communication", path: "/videos/words/Talk.mp4", description: "Index finger moves outward from lips in conversational arc" },
-  { word: "Safe", icon: "🛡️", category: "Essential", path: "/videos/words/Safe.mp4", description: "Crossed wrists open outward in protection and safety sign" },
-  { word: "Happy", icon: "😊", category: "Emotions", path: "/videos/words/Happy.mp4", description: "Open palms brush upward against chest twice cheerfully" },
-  { word: "Sad", icon: "😢", category: "Emotions", path: "/videos/words/Sad.mp4", description: "Open palms drop downward in front of face" },
-  { word: "Learn", icon: "📖", category: "Education", path: "/videos/words/Learn.mp4", description: "Fingers pick information from flat palm to forehead" },
-  { word: "Sign", icon: "🤟", category: "Communication", path: "/videos/words/Sign.mp4", description: "Both hands rotate in alternating circular sign motions" },
-  { word: "Sound", icon: "🔊", category: "Communication", path: "/videos/words/Sound.mp4", description: "Index points to ear then moves outward in wave" },
+  { word: "Not", icon: "hand", category: "Expressions", path: "/videos/words/Not.mp4", description: "Thumb flicks forward from under chin to indicate negation" },
+  { word: "Eat", icon: "hand", category: "Daily Life", path: "/videos/words/Eat.mp4", description: "Bunched fingertips bring food gesture towards mouth" },
+  { word: "Talk", icon: "mic", category: "Communication", path: "/videos/words/Talk.mp4", description: "Index finger moves outward from lips in conversational arc" },
+  { word: "Safe", icon: "shield", category: "Essential", path: "/videos/words/Safe.mp4", description: "Crossed wrists open outward in protection and safety sign" },
+  { word: "Happy", icon: "happy", category: "Emotions", path: "/videos/words/Happy.mp4", description: "Open palms brush upward against chest twice cheerfully" },
+  { word: "Sad", icon: "hand", category: "Emotions", path: "/videos/words/Sad.mp4", description: "Open palms drop downward in front of face" },
+  { word: "Learn", icon: "book", category: "Education", path: "/videos/words/Learn.mp4", description: "Fingers pick information from flat palm to forehead" },
+  { word: "Sign", icon: "hand", category: "Communication", path: "/videos/words/Sign.mp4", description: "Both hands rotate in alternating circular sign motions" },
+  { word: "Sound", icon: "volume", category: "Communication", path: "/videos/words/Sound.mp4", description: "Index points to ear then moves outward in wave" },
   { word: "Time", icon: "⏱️", category: "Daily Life", path: "/videos/words/Time.mp4", description: "Index finger taps the back of opposite wrist like a watch" },
-  { word: "Home", icon: "🏠", category: "Daily Life", path: "/videos/words/Home.mp4", description: "Fingertips tap chin then cheek in familiar motion" },
-  { word: "Work", icon: "💼", category: "Daily Life", path: "/videos/words/Work.mp4", description: "One fist taps down on top of opposite wrist twice" },
+  { word: "Home", icon: "home", category: "Daily Life", path: "/videos/words/Home.mp4", description: "Fingertips tap chin then cheek in familiar motion" },
+  { word: "Work", icon: "work", category: "Daily Life", path: "/videos/words/Work.mp4", description: "One fist taps down on top of opposite wrist twice" },
   { word: "Day", icon: "☀️", category: "Daily Life", path: "/videos/words/Day.mp4", description: "Forearm arcs downward like the sun across horizon" },
   { word: "Beautiful", icon: "✨", category: "Expressions", path: "/videos/words/Beautiful.mp4", description: "Open hand circles face and gathers into gentle fingertips" },
 ];
@@ -39,7 +39,7 @@ export const NUMBER_SIGNS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({
 export const LETTER_SIGNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l) => ({
   word: `Letter ${l}`,
   letter: l,
-  icon: `🔤 ${l}`,
+  icon: `${l}`,
   category: "Alphabet",
   path: `/videos/letters/${l}.mp4`,
   description: `Official ISL manual alphabet sign for letter ${l}`,
@@ -47,7 +47,7 @@ export const LETTER_SIGNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l) => ({
 
 export const ALL_WORD_SIGNS = WORD_DATABASE.map((w) => ({
   word: w,
-  icon: "🤟",
+  icon: "hand",
   category: "Vocabulary",
   path: `/videos/words/${w}.mp4`,
   description: `ISL human demonstration video for "${w}"`,
@@ -218,7 +218,7 @@ export default function ISLSignVideoTranslator({
                 }`}
                 title="Speak translation out loud"
               >
-                <span className="emoji">{isSpeakingNow ? "🔊" : "🗣️"}</span>
+                <span className="emoji">{isSpeakingNow ? "volume" : "mic"}</span>
                 <span>{isSpeakingNow ? "Speaking…" : "Speak Voice"}</span>
               </button>
             </div>
@@ -256,7 +256,7 @@ export default function ISLSignVideoTranslator({
               }`}
               title="Repeat video continuously"
             >
-              🔁 Loop {isLooping ? "ON" : "OFF"}
+              Loop {isLooping ? "ON" : "OFF"}
             </button>
           </div>
 
@@ -285,7 +285,7 @@ export default function ISLSignVideoTranslator({
               className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-all hover:scale-102"
               title="Switch to camera view and practice signing this gesture"
             >
-              <span className="emoji">📹</span>
+              <Camera size={13} />
               <span>Practice in Camera</span>
             </button>
           )}
@@ -296,7 +296,7 @@ export default function ISLSignVideoTranslator({
       <div className="xl:col-span-5 flex flex-col min-h-[300px] xl:min-h-0 h-full bg-white dark:bg-[#000000] rounded-xl p-2.5 sm:p-3 border border-slate-200 dark:border-[#004AFF]/30 overflow-hidden flex-1">
         {/* Top Search Bar */}
         <div className="relative mb-2 flex-shrink-0">
-          <span className="absolute left-2.5 top-2 text-xs text-slate-400">🔍</span>
+          <Search size={13} className="absolute left-2.5 top-2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
@@ -317,10 +317,10 @@ export default function ISLSignVideoTranslator({
         {/* Tab Selector Pills */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 mb-2 flex-shrink-0">
           {[
-            { id: "popular", label: `🌟 Essential (${POPULAR_SIGNS.length})` },
-            { id: "all_words", label: `💬 Words (${ALL_WORD_SIGNS.length})` },
-            { id: "numbers", label: `🔢 Numbers (0–9)` },
-            { id: "letters", label: `🔤 Alphabet (A–Z)` },
+            { id: "popular", label: `Essential (${POPULAR_SIGNS.length})` },
+            { id: "all_words", label: `Words (${ALL_WORD_SIGNS.length})` },
+            { id: "numbers", label: `Numbers (0–9)` },
+            { id: "letters", label: `Alphabet (A–Z)` },
           ].map((tab) => (
             <button
               key={tab.id}
