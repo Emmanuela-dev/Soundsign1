@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark Mode Theme System:
+   Background: #000000 (Pure OLED Black)
+   Texts: #DDE3E7 (Light Silver/Slate)
+   Addition Accent: #004AFF (Electric Royal Blue)
+   Leaving Emojis Yellow & colorful
+   ───────────────────────────────────────────────────────────────────────────── */
+
+html.dark,
+.dark {
+  background-color: #000000 !important;
+  color: #DDE3E7;
+}
+
+.dark body {
+  background-color: #000000 !important;
+  color: #DDE3E7;
+}
+
+/* Preserve natural colorful yellow emojis across all fonts and modes */
+.emoji,
+span[role="img"] {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  filter: none !important;
+  color: initial;
+}
+
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1a2234;
+  border-radius: 9999px;
+  border: 1px solid #004AFF40;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #004AFF;
+}
