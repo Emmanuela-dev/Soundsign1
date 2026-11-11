@@ -3,11 +3,11 @@
 //
 // Tracks hand spatial trajectories across a sliding temporal window of 15-25 frames.
 // Enables recognition of dynamic gestures that require movement:
-//   1. Waving side-to-side           → "Hello" (👋)
-//   2. Forward/outward stroke        → "Thank You" (🙏)
-//   3. Upward brushing against chest → "Happy" (😊)
-//   4. Vertical fist nodding         → "Yes" (👍)
-//   5. Horizontal hand shaking       → "No" (🚫)
+//   1. Waving side-to-side           → "Hello" [WAVE]
+//   2. Forward/outward stroke        → "Thank You" [FORWARD_STROKE]
+//   3. Upward brushing against chest → "Happy" [UPWARD_BRUSH]
+//   4. Vertical fist nodding         → "Yes" [VERTICAL_NOD]
+//   5. Horizontal hand shaking       → "No" [HORIZONTAL_SHAKE]
 // ─────────────────────────────────────────────────────────────────────────────
 
 export class HandMotionTracker {

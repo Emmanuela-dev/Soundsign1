@@ -1,4 +1,34 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  Sparkles,
+  Video,
+  Volume2,
+  Camera,
+  Search,
+  X,
+  Plus,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  Layers,
+  BookOpen,
+  Maximize2,
+  Minimize2,
+  GraduationCap,
+  Loader2,
+  Star,
+  Check,
+  Hand,
+  Users,
+  Shield,
+  Heart,
+  Activity,
+  Zap,
+  Stethoscope,
+  Clock,
+  Play,
+  RotateCcw,
+} from "lucide-react";
 import { speakText, EMOTION_PROFILES } from "./ttsUtils";
 import {
   BUILTIN_GESTURES,
@@ -16,9 +46,54 @@ import ISLSignVideoTranslator, {
 import { HandMotionTracker } from "./motionTracker";
 import { getCachedSrc } from "../hooks/useVideoPreloader";
 
-const POPULAR_EMOJIS = [
-  "✨", "💧", "🩺", "🍎", "🏠", "💡", "✋", "🤟", "🤝", "❤️", "⚡", "☕", "🚻", "🚗", "🙏", "🫶"
+const POPULAR_SYMBOLS = [
+  "Star", "Heart", "Stethoscope", "Zap", "Shield", "Activity", "Check", "Sparkles", "Clock", "Users", "Hand"
 ];
+
+function TerminalSignIcon({ icon, className = "w-4 h-4 text-blue-600 dark:text-[#004AFF]" }) {
+  if (!icon) return <Hand className={className} />;
+  if (/^[0-9]$/.test(icon)) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-[#DDE3E7] font-mono font-bold text-[11px] border border-slate-300 dark:border-slate-700">
+        #{icon}
+      </span>
+    );
+  }
+  if (/^[A-Za-z]$/.test(icon)) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono font-bold text-[11px] border border-blue-200 dark:border-blue-800/50">
+        {icon}
+      </span>
+    );
+  }
+  const ICON_MAP = {
+    Heart,
+    ThumbsUp: Check,
+    Sparkles,
+    Users,
+    Hand,
+    HeartHandshake: Heart,
+    Smile: Activity,
+    Check,
+    X,
+    Activity,
+    Shield,
+    CheckCircle2,
+    Square: Activity,
+    Navigation: ChevronRight,
+    Phone: Volume2,
+    Zap,
+    Crosshair: Activity,
+    ShieldCheck: CheckCircle2,
+    Utensils: Activity,
+    Star,
+    Video,
+    Stethoscope,
+    Clock,
+  };
+  const IconComp = ICON_MAP[icon] || Hand;
+  return <IconComp className={className} />;
+}
 
 /**
  * Dynamically loads MediaPipe Hands library from CDN if not already present
@@ -113,7 +188,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
   const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false);
   const [trainingName, setTrainingName] = useState("");
   const [trainingWord, setTrainingWord] = useState("");
-  const [trainingIcon, setTrainingIcon] = useState("✨");
+  const [trainingIcon, setTrainingIcon] = useState("Sparkles");
   const [trainingCountdown, setTrainingCountdown] = useState(null);
   const [trainingStatusMessage, setTrainingStatusMessage] = useState("");
 
@@ -513,7 +588,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
   const handleOpenTraining = () => {
     setTrainingName("");
     setTrainingWord("");
-    setTrainingIcon("✨");
+    setTrainingIcon("Sparkles");
     setTrainingCountdown(null);
     setTrainingStatusMessage("");
     setIsTrainingModalOpen(true);
@@ -564,7 +639,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
 
           if (newGesture) {
             setCustomGestures((prev) => [newGesture, ...prev]);
-            setTrainingStatusMessage(`✅ Gesture "${newGesture.name}" trained successfully! Camera will now interpret it.`);
+            setTrainingStatusMessage(`Gesture "${newGesture.name}" trained successfully! Camera will now interpret it.`);
             setTimeout(() => {
               setIsTrainingModalOpen(false);
             }, 1600);
@@ -631,7 +706,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
 
     const signToPlay = matched || {
       word: gesture.word || gesture.name,
-      icon: gesture.icon || "🤟",
+      icon: gesture.icon || "Hand",
       category: "Gestures",
       path: `/videos/words/Hello.mp4`,
       description: gesture.description || gesture.name,
@@ -712,7 +787,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-600 dark:bg-[#004AFF] flex items-center justify-center text-white shadow-lg">
-            <span className="emoji text-lg select-none">🤟</span>
+            <Video className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -734,7 +809,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                   }`}
                   title="Live Optical Vision Camera Interpreter"
                 >
-                  <span className="emoji">📹</span>
+                  <Camera className="w-3.5 h-3.5" />
                   <span>Camera Mode</span>
                 </button>
                 <button
@@ -746,7 +821,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                   }`}
                   title="High-Clarity ISL Video Translator (Sign → Voice) with zero camera errors"
                 >
-                  <span className="emoji">🎬</span>
+                  <Video className="w-3.5 h-3.5" />
                   <span>Video Signs (Sign → Voice)</span>
                 </button>
                 <button
@@ -758,7 +833,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                   }`}
                   title="Browse full Gesture Gallery catalog"
                 >
-                  <span className="emoji">📚</span>
+                  <BookOpen className="w-3.5 h-3.5" />
                   <span>Gallery ({allGesturesList.length})</span>
                 </button>
               </div>
@@ -782,7 +857,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
               }`}
               title="Toggle high-clarity reference ISL video guide next to camera"
             >
-              <span className="emoji">🎬</span>
+              <Video className="w-3.5 h-3.5" />
               <span>{showCamRefVideo ? "Hide Video Guide" : "Sign Video Guide"}</span>
             </button>
           )}
@@ -798,18 +873,22 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
               }`}
               title={videoRangeMode === "cinema" ? "Switch to standard comfortable range" : "Maximize video range to full height for comfortable signing"}
             >
-              <span className="emoji">{videoRangeMode === "cinema" ? "🗗" : "⛶"}</span>
+              {videoRangeMode === "cinema" ? (
+                <Minimize2 className="w-3.5 h-3.5" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5" />
+              )}
               <span>{videoRangeMode === "cinema" ? "Standard Range" : "Maximize Range"}</span>
             </button>
           )}
 
-          {/* ➕ Train Sign Button */}
+          {/* Train Sign Button */}
           <button
             onClick={handleOpenTraining}
             className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all hover:scale-102"
             title="Train camera to learn any new custom hand gesture"
           >
-            <span className="text-sm leading-none">➕</span>
+            <Plus className="w-3.5 h-3.5" />
             <span>Train Sign</span>
           </button>
 
@@ -837,7 +916,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
             className="px-2.5 py-1 bg-blue-100 dark:bg-[#004AFF]/20 hover:bg-blue-200 dark:hover:bg-[#004AFF]/30 text-blue-800 dark:text-[#DDE3E7] border border-transparent dark:border-[#004AFF]/40 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
             title="Preview how soft human voice sounds"
           >
-            <span className="emoji">🔊</span>
+            <Volume2 className="w-3.5 h-3.5" />
             <span>Test Voice</span>
           </button>
 
@@ -873,7 +952,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
 
       {cameraError && (
         <div className="mb-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
-          <span className="emoji">⚠️</span>
+          <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
           <span>{cameraError}</span>
         </div>
       )}
@@ -887,7 +966,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mb-3 pb-2 border-b border-slate-200 dark:border-[#004AFF]/25 flex-shrink-0">
             {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <span className="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
+              <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
                 value={gallerySearch}
@@ -900,7 +979,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                   onClick={() => setGallerySearch("")}
                   className="absolute right-2.5 top-2 text-xs text-slate-400 hover:text-slate-600"
                 >
-                  ✕
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -909,12 +988,12 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
               {[
                 { id: "all", label: `All (${allGesturesList.length})` },
-                { id: "single_hand", label: `🖐️ 1 Hand Only (${allGesturesList.filter((g) => g.singleHandOnly).length})` },
-                { id: "two_handed", label: `👐 Two-Handed (${allGesturesList.filter((g) => g.isTwoHanded).length})` },
+                { id: "single_hand", label: `1-Hand Only (${allGesturesList.filter((g) => g.singleHandOnly).length})` },
+                { id: "two_handed", label: `Two-Handed (${allGesturesList.filter((g) => g.isTwoHanded).length})` },
                 { id: "basics", label: "Expressions" },
                 { id: "numbers", label: "Numbers 0-9" },
                 { id: "letters", label: "Alphabet" },
-                { id: "custom", label: `⭐ Trained (${customGestures.length})` },
+                { id: "custom", label: `Custom Trained (${customGestures.length})` },
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -934,14 +1013,14 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           {/* Contextual Guidance Banner for Hand Requirements */}
           {galleryCategory === "single_hand" && (
             <div className="mb-2.5 p-2 rounded-xl bg-blue-50 dark:bg-[#000000] border border-blue-200 dark:border-[#004AFF]/40 text-xs text-blue-900 dark:text-[#DDE3E7] flex items-center gap-2">
-              <span className="emoji text-base">🖐️</span>
+              <Hand className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span><strong>Single-Hand Signs:</strong> Must be performed with 1 hand only. If two hands are active in frame, recognition is suppressed to prevent misinterpretation.</span>
             </div>
           )}
           {galleryCategory === "two_handed" && (
             <div className="mb-2.5 p-2 rounded-xl bg-emerald-50 dark:bg-[#000000] border border-emerald-300 dark:border-[#004AFF]/40 text-xs text-emerald-900 dark:text-[#DDE3E7] flex items-center gap-2">
-              <span className="emoji text-base">👐</span>
-              <span><strong>Two-Handed Signs:</strong> These gestures specifically require both hands held up simultaneously in camera (Heart 🫶, Double Thumbs Up 👍👍, Clap 👏, Welcome 🤗).</span>
+              <Users className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span><strong>Two-Handed Signs:</strong> These gestures specifically require both hands held up simultaneously in camera (Heart, Double Thumbs Up, Clap, Welcome).</span>
             </div>
           )}
 
@@ -949,7 +1028,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           <div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 pr-1">
             {filteredGalleryGestures.length === 0 ? (
               <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
-                <span className="text-3xl mb-2">🔍</span>
+                <Search className="w-10 h-10 text-slate-400 mb-2" />
                 <p className="text-sm font-bold text-slate-800 dark:text-[#DDE3E7] mb-1">
                   No gestures matched "{gallerySearch}"
                 </p>
@@ -958,9 +1037,10 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                 </p>
                 <button
                   onClick={handleOpenTraining}
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] text-white rounded-xl text-xs font-bold shadow-md cursor-pointer flex items-center gap-1.5 mx-auto"
                 >
-                  ➕ Train New Gesture
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Train New Gesture</span>
                 </button>
               </div>
             ) : (
@@ -971,16 +1051,18 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <span className="emoji text-2xl group-hover:scale-110 transition-transform">{item.icon}</span>
+                      <div className="p-1 rounded bg-slate-100 dark:bg-[#004AFF]/20 flex items-center justify-center">
+                        <TerminalSignIcon icon={item.icon} className="w-5 h-5 text-blue-600 dark:text-[#004AFF]" />
+                      </div>
                       <div className="flex items-center gap-1">
                         {item.singleHandOnly && (
                           <span className="text-[9px] bg-blue-100 dark:bg-[#004AFF]/20 text-blue-800 dark:text-[#DDE3E7] px-1.5 py-0.5 rounded font-bold uppercase">
-                            🖐️ 1 Hand
+                            1 Hand
                           </span>
                         )}
                         {item.isTwoHanded && (
                           <span className="text-[9px] bg-emerald-100 dark:bg-[#004AFF]/20 text-emerald-800 dark:text-[#DDE3E7] px-1.5 py-0.5 rounded font-bold uppercase">
-                            👐 2 Hands
+                            2 Hands
                           </span>
                         )}
                         {item.isCustom && (
@@ -994,7 +1076,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                             className="text-[10px] text-slate-400 hover:text-red-500 p-0.5 cursor-pointer ml-1"
                             title="Delete custom sign"
                           >
-                            ✕
+                            <X className="w-3 h-3" />
                           </button>
                         )}
                       </div>
@@ -1020,7 +1102,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                       className="py-1 px-1 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-[10px] font-semibold text-slate-700 dark:text-[#DDE3E7] flex items-center justify-center gap-0.5 cursor-pointer transition-colors"
                       title="Hear pronunciation in human voice"
                     >
-                      <span className="emoji">🔊</span>
+                      <Volume2 className="w-3 h-3" />
                       <span>Voice</span>
                     </button>
                     <button
@@ -1028,7 +1110,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                       className="py-1 px-1 rounded-lg bg-blue-100 dark:bg-[#004AFF]/20 hover:bg-blue-200 dark:hover:bg-[#004AFF]/35 text-[10px] font-bold text-blue-800 dark:text-[#DDE3E7] flex items-center justify-center gap-0.5 cursor-pointer transition-colors border border-blue-200 dark:border-[#004AFF]/40"
                       title="Watch HD ISL sign video & speak voice (100% accuracy)"
                     >
-                      <span className="emoji">🎬</span>
+                      <Video className="w-3 h-3" />
                       <span>Video</span>
                     </button>
                     <button
@@ -1036,7 +1118,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                       className="py-1 px-1 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-[10px] font-semibold text-white flex items-center justify-center gap-0.5 cursor-pointer transition-colors"
                       title="Try this sign in live camera"
                     >
-                      <span className="emoji">📹</span>
+                      <Camera className="w-3 h-3" />
                       <span>Practice</span>
                     </button>
                   </div>
@@ -1097,7 +1179,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
               <div className="absolute top-12 right-3 w-56 sm:w-64 bg-black/95 dark:bg-[#000000]/95 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 shadow-2xl p-2.5 z-20 flex flex-col gap-2">
                 <div className="flex items-center justify-between pb-1 border-b border-white/10 dark:border-white/10">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-white dark:text-[#DDE3E7]">
-                    <span className="emoji">🎬</span>
+                    <Video className="w-3.5 h-3.5" />
                     <span>ISL Sign Video Guide</span>
                   </div>
                   <button
@@ -1105,7 +1187,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                     className="text-slate-400 hover:text-white text-xs cursor-pointer px-1"
                     title="Close video guide"
                   >
-                    ✕
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
 
@@ -1119,7 +1201,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                     className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-1 left-2 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-bold">
-                    {camRefSign?.icon} {camRefSign?.word}
+                    {camRefSign?.word}
                   </div>
                 </div>
 
@@ -1131,14 +1213,14 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                           id: camRefSign.word.toLowerCase().replace(/[^a-z0-9]/g, "_"),
                           name: camRefSign.word,
                           word: camRefSign.word,
-                          icon: camRefSign.icon || "🤟",
+                          icon: camRefSign.icon || "Hand",
                         });
                       }
                     }}
                     className="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                     title="Speak this sign and send to conversation"
                   >
-                    <span className="emoji">🔊</span>
+                    <Volume2 className="w-3.5 h-3.5" />
                     <span>Speak Sign</span>
                   </button>
                   <button
@@ -1197,7 +1279,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                     key={currentGesture.id}
                     className="absolute top-2.5 right-3 bg-emerald-950/90 dark:bg-[#000000]/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/60 dark:border-emerald-500/60 text-emerald-300 dark:text-[#DDE3E7] text-xs font-bold flex items-center gap-2 shadow-xl transition-all duration-300 ease-out transform scale-100 opacity-100 z-10"
                   >
-                    <span className="emoji text-base transition-transform duration-300">{currentGesture.icon}</span>
+                    <TerminalSignIcon icon={currentGesture.icon} className="w-4 h-4 text-emerald-300" />
                     <span className="tracking-wide">RECOGNIZED: "{currentGesture.word}"</span>
                     <span className="text-[10px] bg-emerald-500/30 dark:bg-emerald-500/30 px-1.5 py-0.5 rounded text-emerald-200 dark:text-[#DDE3E7] font-mono">
                       {currentGesture.confidence}%
@@ -1231,8 +1313,8 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                 {isQuickDrawerOpen ? (
                   <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-4 bg-slate-950/90 dark:bg-[#000000]/95 backdrop-blur-lg p-2 rounded-xl border border-white/10 dark:border-[#004AFF]/40 shadow-2xl z-20 transition-all">
                     <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#DDE3E7]/70 mb-1 px-1 flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <span className="emoji">✨</span>
+                      <span className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-blue-400" />
                         <span>Quick Signs:</span>
                       </span>
                       <div className="flex items-center gap-2">
@@ -1240,7 +1322,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                           onClick={() => setViewMode("video")}
                           className="text-emerald-400 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                         >
-                          <span>🎬 Video Mode ↗</span>
+                          <span>Video Mode ↗</span>
                         </button>
                         <button
                           onClick={() => setViewMode("gallery")}
@@ -1265,7 +1347,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                           className="px-2.5 py-1 bg-slate-800/90 dark:bg-[#000000] hover:bg-blue-600 hover:text-white dark:hover:bg-[#004AFF] dark:hover:text-[#DDE3E7] border border-slate-700 dark:border-[#004AFF]/30 hover:border-blue-400 dark:hover:border-[#004AFF] rounded-lg text-xs font-semibold text-slate-200 dark:text-[#DDE3E7] flex items-center gap-1.5 whitespace-nowrap transition-all shadow-xs cursor-pointer flex-shrink-0"
                           title={`Sign "${g.name}"`}
                         >
-                          <span className="emoji text-sm">{g.icon}</span>
+                          <TerminalSignIcon icon={g.icon} className="w-3.5 h-3.5" />
                           <span>{g.word}</span>
                         </button>
                       ))}
@@ -1277,7 +1359,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                     className="absolute bottom-2.5 left-3 bg-black/85 dark:bg-[#000000]/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 dark:border-white/20 text-[11px] text-white dark:text-[#DDE3E7] font-semibold flex items-center gap-1.5 shadow-lg hover:bg-slate-800 cursor-pointer z-10 transition-all hover:scale-102"
                     title="Open Quick Signs panel"
                   >
-                    <span className="emoji">✨</span>
+                    <Sparkles className="w-3.5 h-3.5 text-blue-400" />
                     <span>Quick Signs (16) ▴</span>
                   </button>
                 )}
@@ -1291,7 +1373,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
       <div className="mt-2.5 flex-shrink-0 bg-blue-50/50 dark:bg-[#000000] p-2.5 rounded-xl border border-blue-200 dark:border-[#004AFF]/30 shadow-sm">
         <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-[#DDE3E7] mb-1.5 px-0.5">
           <span className="flex items-center gap-1.5">
-            <span className="emoji">💬</span>
+            <Volume2 className="w-3.5 h-3.5 text-blue-600 dark:text-[#004AFF]" />
             <span>Interpreted Sentence:</span>
           </span>
           {responseText && (
@@ -1329,7 +1411,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
             }`}
             title="Speak response"
           >
-            <span className="emoji text-base">🔊</span>
+            <Volume2 className="w-4 h-4" />
             <span>{isSpeaking ? "Speaking..." : "Speak"}</span>
           </button>
         </div>
@@ -1341,7 +1423,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
           <div className="bg-white dark:bg-[#000000] border border-slate-300 dark:border-[#004AFF]/40 rounded-2xl p-4 sm:p-6 w-full max-w-md shadow-2xl transition-all">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-200 dark:border-[#004AFF]/20">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🎓</span>
+                <GraduationCap className="w-5 h-5 text-blue-600 dark:text-[#004AFF]" />
                 <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-[#DDE3E7]">
                   Train Custom Gesture (One or Both Hands)
                 </h3>
@@ -1350,7 +1432,7 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                 onClick={() => setIsTrainingModalOpen(false)}
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-[#DDE3E7] text-sm p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1365,7 +1447,11 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
                   : "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-200"
               }`}
             >
-              <span className="emoji">{handsDetectedCount > 0 ? "✅" : "⚠️"}</span>
+              {handsDetectedCount > 0 ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              )}
               <span className="font-medium">
                 {handsDetectedCount > 0
                   ? `${handsDetectedCount === 2 ? "Both hands" : "Hand"} detected in camera — Ready to capture!`
@@ -1402,21 +1488,22 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 dark:text-[#DDE3E7] mb-1">
-                  Select Emoji Icon:
+                  Select Symbol Icon:
                 </label>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  {POPULAR_EMOJIS.map((emoji) => (
+                  {POPULAR_SYMBOLS.map((sym) => (
                     <button
-                      key={emoji}
+                      key={sym}
                       type="button"
-                      onClick={() => setTrainingIcon(emoji)}
-                      className={`w-7 h-7 rounded-lg text-base flex items-center justify-center transition-all cursor-pointer ${
-                        trainingIcon === emoji
+                      onClick={() => setTrainingIcon(sym)}
+                      className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer ${
+                        trainingIcon === sym
                           ? "bg-blue-600 dark:bg-[#004AFF] text-white scale-110 shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20"
+                          : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-slate-700 dark:text-slate-300"
                       }`}
+                      title={sym}
                     >
-                      <span className="emoji">{emoji}</span>
+                      <TerminalSignIcon icon={sym} className="w-3.5 h-3.5" />
                     </button>
                   ))}
                 </div>
@@ -1445,12 +1532,12 @@ export default function GestureTerminal({ onSendMessage, isFullFocus = false }) 
               >
                 {trainingCountdown !== null ? (
                   <>
-                    <span className="animate-spin">⏳</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     <span>{typeof trainingCountdown === "number" ? `Capture in ${trainingCountdown}s...` : trainingCountdown}</span>
                   </>
                 ) : (
                   <>
-                    <span>📷</span>
+                    <Camera className="w-3.5 h-3.5" />
                     <span>Capture & Train Pose</span>
                   </>
                 )}

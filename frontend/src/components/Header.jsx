@@ -1,5 +1,6 @@
 import ThemeToggle from './ThemeToggle';
 import Microphone from './Microphone';
+import { Stethoscope, ArrowLeftRight, Video } from 'lucide-react';
 
 const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator", setMode }) => {
   return (
@@ -10,34 +11,50 @@ const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 
-                className="text-lg font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity"
+                className="text-lg font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5"
                 onClick={() => window.location.reload()}
               >
-                SoundSigns
+                <span>SoundSigns</span>
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                  MedIntake
+                </span>
               </h1>
             </div>
             <div className="flex items-center gap-2">
               {setMode && (
                 <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-0.5 rounded-lg border border-slate-200 dark:border-[#004AFF]/30 text-xs">
                   <button
-                    onClick={() => setMode("translator")}
-                    className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                      mode === "translator"
-                        ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
+                    onClick={() => setMode("medical")}
+                    className={`px-2 py-0.5 rounded-md font-bold transition-all flex items-center gap-1 ${
+                      mode === "medical"
+                        ? "bg-cyan-500 text-slate-950 shadow-xs"
                         : "text-slate-500 dark:text-[#DDE3E7]/60 hover:dark:text-[#DDE3E7]"
                     }`}
                   >
-                    1-Way
+                    <Stethoscope className="w-3.5 h-3.5" />
+                    <span>Intake</span>
                   </button>
                   <button
                     onClick={() => setMode("twoway")}
-                    className={`px-2 py-0.5 rounded-md font-medium transition-all ${
+                    className={`px-2 py-0.5 rounded-md font-medium transition-all flex items-center gap-1 ${
                       mode === "twoway"
                         ? "bg-blue-600 dark:bg-[#004AFF] text-white dark:text-[#DDE3E7] shadow-xs"
                         : "text-slate-500 dark:text-[#DDE3E7]/60 hover:dark:text-[#DDE3E7]"
                     }`}
                   >
-                    2-Way
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    <span>2-Way</span>
+                  </button>
+                  <button
+                    onClick={() => setMode("translator")}
+                    className={`px-2 py-0.5 rounded-md font-medium transition-all flex items-center gap-1 ${
+                      mode === "translator"
+                        ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
+                        : "text-slate-500 dark:text-[#DDE3E7]/60 hover:dark:text-[#DDE3E7]"
+                    }`}
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>1-Way</span>
                   </button>
                 </div>
               )}
@@ -63,10 +80,13 @@ const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator
           {/* Left - Title */}
           <div className="col-span-4 min-w-0 flex items-center gap-3">
             <h1 
-              className="text-xl md:text-2xl font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity"
+              className="text-xl md:text-2xl font-bold text-blue-700 dark:text-[#DDE3E7] cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
               onClick={() => window.location.reload()}
             >
-              SoundSigns
+              <span>SoundSigns</span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 tracking-wider uppercase font-mono">
+                MedIntake
+              </span>
             </h1>
           </div>
 
@@ -88,16 +108,16 @@ const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator
             {setMode && (
               <div className="flex items-center bg-slate-100 dark:bg-[#000000] p-1 rounded-xl border border-slate-200 dark:border-[#004AFF]/30 shadow-xs">
                 <button
-                  onClick={() => setMode("translator")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    mode === "translator"
-                      ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
+                  onClick={() => setMode("medical")}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    mode === "medical"
+                      ? "bg-cyan-500 text-slate-950 shadow-md font-black ring-1 ring-cyan-300"
                       : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-slate-900 dark:hover:text-[#DDE3E7]"
                   }`}
-                  title="Speech to ISL Sign Translation"
+                  title="Medical-Grade Clinical Intake & Triage System"
                 >
-                  <span className="emoji">🤟</span>
-                  <span>Translate</span>
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>Medical Intake</span>
                 </button>
                 <button
                   onClick={() => setMode("twoway")}
@@ -108,8 +128,20 @@ const Header = ({ isRecording, toggleRecording, isProcessing, mode = "translator
                   }`}
                   title="Two-Way Conversation Bridge (Hearing ↔ Gesture)"
                 >
-                  <span className="emoji">🔄</span>
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
                   <span>Two-Way</span>
+                </button>
+                <button
+                  onClick={() => setMode("translator")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    mode === "translator"
+                      ? "bg-white dark:bg-[#004AFF] text-blue-700 dark:text-[#DDE3E7] shadow-xs"
+                      : "text-slate-600 dark:text-[#DDE3E7]/70 hover:text-slate-900 dark:hover:text-[#DDE3E7]"
+                  }`}
+                  title="Speech to ISL Sign Translation"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Translate</span>
                 </button>
               </div>
             )}

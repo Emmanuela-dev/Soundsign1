@@ -85,7 +85,7 @@ export async function loadGestureModel() {
       modelStatus = "ready";
       modelError = null;
       console.log(
-        `[GestureAI] Neural network ready ✓ (${modelData.num_classes} classes, accuracy: ${(
+        `[GestureAI] Neural network ready [READY] (${modelData.num_classes} classes, accuracy: ${(
           modelData.accuracy * 100
         ).toFixed(1)}%)`
       );

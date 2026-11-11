@@ -1,4 +1,16 @@
 import React, { useState } from "react";
+import {
+  Columns,
+  Mic,
+  Video,
+  Maximize2,
+  Volume2,
+  Play,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
+} from "lucide-react";
 import ISLVideoSection from "./ISLVideoSection";
 import GestureTerminal from "./GestureTerminal";
 import { speakText } from "./ttsUtils";
@@ -98,7 +110,7 @@ export default function TwoWayIntercom({
             }`}
             title="View both Hearing and Gesture consoles side-by-side"
           >
-            <span className="emoji text-sm">🔄</span>
+            <Columns className="w-3.5 h-3.5" />
             <span>Split View (Dual Mode)</span>
           </button>
 
@@ -112,7 +124,7 @@ export default function TwoWayIntercom({
             }`}
             title="Focus solely on Hearing Mode: Speech to Sign Avatar"
           >
-            <span className="emoji text-sm">🗣️</span>
+            <Mic className="w-3.5 h-3.5" />
             <span>Hearing Mode</span>
             {hearingCount > 0 && (
               <span className="text-[10px] bg-black/20 dark:bg-white/20 px-1.5 py-0.2 rounded-full">
@@ -131,7 +143,7 @@ export default function TwoWayIntercom({
             }`}
             title="Focus solely on Gesture Mode: Camera Sign Language Interpreter & Voice Output"
           >
-            <span className="emoji text-sm">🤟</span>
+            <Video className="w-3.5 h-3.5" />
             <span>Gesture Mode (Camera & Video)</span>
             {gestureCount > 0 && (
               <span className="text-[10px] bg-black/20 dark:bg-white/20 px-1.5 py-0.2 rounded-full">
@@ -157,7 +169,7 @@ export default function TwoWayIntercom({
             <div className="flex items-center justify-between mb-1.5 px-1 flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-xs font-bold text-emerald-700 dark:text-[#DDE3E7] flex items-center gap-1.5 truncate">
-                  <span className="emoji">🗣️</span>
+                  <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-[#004AFF]" />
                   <span className="hidden sm:inline">HEARING MODE (Speech & Text → Sign Avatar)</span>
                   <span className="sm:hidden">HEARING MODE</span>
                 </span>
@@ -169,18 +181,22 @@ export default function TwoWayIntercom({
                 {activeMode === "split" ? (
                   <button onClick={() => handleSetMode("hearing")}
                     className="text-[11px] text-slate-500 hover:text-emerald-600 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span>⛶ Maximize</span>
+                    <Maximize2 className="w-3 h-3" />
+                    <span>Maximize</span>
                   </button>
                 ) : (
                   <button onClick={() => handleSetMode("split")}
                     className="text-[11px] text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span className="emoji">🔄</span> Split View
+                    <Columns className="w-3 h-3" />
+                    <span>Split View</span>
                   </button>
                 )}
                 {activeMode !== "gesture" && (
                   <button onClick={() => handleSetMode("gesture")}
                     className="text-[11px] text-blue-600 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer pl-2 border-l border-slate-300 dark:border-[#004AFF]/30">
-                    <span className="emoji">🤟</span> Gesture →
+                    <Video className="w-3 h-3" />
+                    <span>Gesture</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
                   </button>
                 )}
               </div>
@@ -209,7 +225,7 @@ export default function TwoWayIntercom({
             <div className="flex items-center justify-between mb-1.5 px-1 flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-xs font-bold text-blue-700 dark:text-[#DDE3E7] flex items-center gap-1.5 truncate">
-                  <span className="emoji">🤟</span>
+                  <Video className="w-3.5 h-3.5 text-blue-600 dark:text-[#004AFF]" />
                   <span className="hidden sm:inline">GESTURE MODE (Camera & Video Sign Interpreter → Spoken Audio)</span>
                   <span className="sm:hidden">GESTURE MODE</span>
                 </span>
@@ -221,18 +237,22 @@ export default function TwoWayIntercom({
                 {activeMode === "split" ? (
                   <button onClick={() => handleSetMode("gesture")}
                     className="text-[11px] text-slate-500 hover:text-blue-600 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span>⛶ Maximize</span>
+                    <Maximize2 className="w-3 h-3" />
+                    <span>Maximize</span>
                   </button>
                 ) : (
                   <button onClick={() => handleSetMode("split")}
                     className="text-[11px] text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#004AFF] font-semibold flex items-center gap-1 cursor-pointer">
-                    <span className="emoji">🔄</span> Split View
+                    <Columns className="w-3 h-3" />
+                    <span>Split View</span>
                   </button>
                 )}
                 {activeMode !== "hearing" && (
                   <button onClick={() => handleSetMode("hearing")}
                     className="text-[11px] text-emerald-600 dark:text-[#004AFF] hover:underline font-semibold flex items-center gap-1 cursor-pointer pl-2 border-l border-slate-300 dark:border-[#004AFF]/30">
-                    <span className="emoji">🗣️</span> Hearing →
+                    <Mic className="w-3 h-3" />
+                    <span>Hearing</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
                   </button>
                 )}
               </div>
@@ -308,28 +328,45 @@ export default function TwoWayIntercom({
         <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-200 dark:border-[#004AFF]/25 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-[#DDE3E7] flex items-center gap-1.5">
-              <span className="emoji">💬</span> Two-Way Conversation Timeline
+              <MessageSquare className="w-3.5 h-3.5 text-slate-700 dark:text-[#DDE3E7]" />
+              Two-Way Conversation Timeline
             </span>
             <span className="text-[10px] bg-slate-100 dark:bg-[#004AFF]/20 dark:border dark:border-[#004AFF]/30 px-2 py-0.5 rounded-full text-slate-500 dark:text-[#DDE3E7] font-mono">
               {conversationHistory.length} msgs
             </span>
-            <div className="hidden sm:flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="text-emerald-600 dark:text-[#004AFF] font-semibold"><span className="emoji">🗣️</span> {hearingCount}</span>
+            <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span className="text-emerald-600 dark:text-[#004AFF] font-semibold flex items-center gap-0.5">
+                <Mic className="w-2.5 h-2.5" />
+                {hearingCount}
+              </span>
               <span>·</span>
-              <span className="text-blue-600 dark:text-[#DDE3E7] font-semibold"><span className="emoji">🤟</span> {gestureCount}</span>
+              <span className="text-blue-600 dark:text-[#DDE3E7] font-semibold flex items-center gap-0.5">
+                <Video className="w-2.5 h-2.5" />
+                {gestureCount}
+              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-slate-400 dark:text-[#DDE3E7]/60 hidden md:inline">
-              Click <span className="emoji">🔊</span> to hear voice or <span className="emoji">▶</span> to replay sign
+              Click <Volume2 className="w-3 h-3 inline mx-0.5 text-slate-500" /> to hear voice or <Play className="w-2.5 h-2.5 inline mx-0.5 text-slate-500" /> to replay sign
             </span>
             <button
               onClick={() => setIsTimelineExpanded((prev) => !prev)}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#DDE3E7] font-semibold px-2 py-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#004AFF]/20 cursor-pointer transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-800 dark:text-[#DDE3E7]/70 dark:hover:text-[#DDE3E7] font-semibold px-2 py-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#004AFF]/20 cursor-pointer transition-colors flex items-center gap-1"
               title={isTimelineExpanded ? "Minimize timeline" : "Expand timeline"}
             >
-              {isTimelineExpanded ? "▾ Hide" : "▴ Show History"}
+              {isTimelineExpanded ? (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  <span>Hide</span>
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  <span>Show History</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -352,7 +389,7 @@ export default function TwoWayIntercom({
                   >
                     {isHearing && (
                       <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-[#004AFF]/30 text-emerald-700 dark:text-[#DDE3E7] flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        <span className="emoji">🗣️</span>
+                        <Mic className="w-3.5 h-3.5" />
                       </div>
                     )}
 
@@ -384,7 +421,7 @@ export default function TwoWayIntercom({
                             onClick={() => playText && playText(msg.text)}
                             className="text-[10px] text-emerald-600 dark:text-[#004AFF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                           >
-                            <span className="emoji">▶</span>
+                            <Play className="w-2.5 h-2.5" />
                             <span>Sign Again</span>
                           </button>
                         ) : (
@@ -393,7 +430,7 @@ export default function TwoWayIntercom({
                             className="text-[10px] text-blue-600 dark:text-[#004AFF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                             title="Hear in soft human voice"
                           >
-                            <span className="emoji">🔊</span>
+                            <Volume2 className="w-2.5 h-2.5" />
                             <span>Hear Voice</span>
                           </button>
                         )}
@@ -402,7 +439,7 @@ export default function TwoWayIntercom({
 
                     {!isHearing && (
                       <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-[#004AFF]/30 text-blue-700 dark:text-[#DDE3E7] flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        <span className="emoji">🤟</span>
+                        <Video className="w-3.5 h-3.5" />
                       </div>
                     )}
                   </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useSpeechRecognition } from "./hooks/useSpeechRecognition.js";
 import { useVideoPreloader } from "./hooks/useVideoPreloader.js";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
@@ -8,13 +9,14 @@ import LiveTranscriptSection from "./components/LiveTranscriptSection.jsx";
 import ISLGlossSection from "./components/ISLGlossSection.jsx";
 import ISLVideoSection from "./components/ISLVideoSection.jsx";
 import TwoWayIntercom from "./components/TwoWayIntercom.jsx";
+import MedicalIntakeConsole from "./components/medical/MedicalIntakeConsole.jsx";
 import Footer from "./components/Footer.jsx";
 
 function AppContent() {
-  const [mode, setMode] = useState("translator");
+  const [mode, setMode] = useState("medical");
   const [conversationHistory, setConversationHistory] = useState([
-    { sender: "hearing", text: "Hello! Welcome to SoundSigns.", timestamp: "12:00 PM" },
-    { sender: "gesture", text: "Hello, nice to meet you!",      timestamp: "12:01 PM" },
+    { sender: "hearing", text: "Hello! Welcome to SoundSigns Medical Intake.", timestamp: "12:00 PM" },
+    { sender: "gesture", text: "Patient intake initiated.",                  timestamp: "12:01 PM" },
   ]);
 
   // ── Pre-load all 151 sign videos into browser memory on mount ─────────────
@@ -98,7 +100,7 @@ function AppContent() {
                         border border-amber-300 dark:border-amber-700
                         rounded-lg flex items-center gap-3 text-sm
                         text-amber-800 dark:text-amber-200 shadow z-50">
-          <span className="emoji text-base">⚠️</span>
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
           <span className="font-medium">{translationError}</span>
           <span className="ml-auto text-xs opacity-70">
             (signs still play in real-time — only the gloss text is affected)
@@ -119,7 +121,15 @@ function AppContent() {
 
       {/* Main content */}
       <main className="flex-1 relative w-full max-w-[1760px] mx-auto px-2 sm:px-4 lg:px-6 overflow-hidden min-h-0">
-        {mode === "twoway" ? (
+        {mode === "medical" ? (
+          /* ── MEDICAL-GRADE INTAKE & CLINICAL TRIAGE SYSTEM ── */
+          <MedicalIntakeConsole
+            signQueueRef={signQueueRef}
+            playWord={playWord}
+            playText={playText}
+            onAddMessage={handleAddMessage}
+          />
+        ) : mode === "twoway" ? (
           /* ── TWO-WAY INTERCOM CONVERSATION BRIDGE ── */
           <TwoWayIntercom
             signQueueRef={signQueueRef}

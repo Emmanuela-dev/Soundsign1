@@ -198,7 +198,7 @@ export function trainGestureFromLandmarks(name, word, icon, sampledFrames) {
     id: `custom_${Date.now()}_${name.toLowerCase().replace(/[^a-z0-9]/g, "_")}`,
     name,
     word: word || name,
-    icon: icon || "✋",
+    icon: icon || "Hand",
     vector: avgVector,
     isCustom: true,
     category: "custom",
@@ -206,7 +206,7 @@ export function trainGestureFromLandmarks(name, word, icon, sampledFrames) {
     isTwoHanded: false,
     singleHandOnly: true,
     hands: 1,
-    handBadge: "🖐️ 1 Hand Only",
+    handBadge: "1-Hand Protocol",
     description: "Custom gesture trained with 1 hand to eliminate misinterpretation",
   };
 }
@@ -220,97 +220,97 @@ export const BUILTIN_GESTURES = [
   {
     id: "two_heart",
     name: "Two-Handed Heart",
-    icon: "🫶",
+    icon: "Heart",
     word: "Love / Care",
     category: "two_handed",
     isTwoHanded: true,
     singleHandOnly: false,
     hands: 2,
-    handBadge: "👐 2 Hands",
+    handBadge: "Dual-Hand Protocol",
     description: "Form a heart shape touching thumb & index fingertips of both hands (Requires both hands)",
     confidence: 98,
   },
   {
     id: "two_thumbsup",
     name: "Double Thumbs Up",
-    icon: "👍👍",
+    icon: "ThumbsUp",
     word: "Awesome / Great job",
     category: "two_handed",
     isTwoHanded: true,
     singleHandOnly: false,
     hands: 2,
-    handBadge: "👐 2 Hands",
+    handBadge: "Dual-Hand Protocol",
     description: "Show thumbs up with both hands simultaneously (Requires both hands)",
     confidence: 98,
   },
   {
     id: "two_clap",
     name: "Clap / Applause",
-    icon: "👏",
+    icon: "Sparkles",
     word: "Congratulations / Good job",
     category: "two_handed",
     isTwoHanded: true,
     singleHandOnly: false,
     hands: 2,
-    handBadge: "👐 2 Hands",
+    handBadge: "Dual-Hand Protocol",
     description: "Bring both open palms close facing each other (Requires both hands)",
     confidence: 96,
   },
   {
     id: "two_welcome",
     name: "Open Hands / Welcome",
-    icon: "🤗",
+    icon: "Users",
     word: "Welcome / Together",
     category: "two_handed",
     isTwoHanded: true,
     singleHandOnly: false,
     hands: 2,
-    handBadge: "👐 2 Hands",
+    handBadge: "Dual-Hand Protocol",
     description: "Extend both open palms forward to camera (Requires both hands)",
     confidence: 96,
   },
 
   // --- Everyday Signs & Expressions (Single-Hand Only to Prevent Misinterpretation) ---
-  { id: "wave", name: "Wave / Hello", icon: "👋", word: "Hello", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Open palm waving side-to-side or held upright (Motion Sign)", confidence: 98 },
-  { id: "thank_you", name: "Thank You (Forward Motion)", icon: "🙏", word: "Thank you", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Flat open palm moving forward from chin towards person (Motion Sign)", confidence: 98 },
-  { id: "happy", name: "Happy (Upward Brush)", icon: "😊", word: "Happy", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Open palm brushing repeatedly upward against chest (Motion Sign)", confidence: 98 },
-  { id: "thumbsup", name: "Thumbs Up (Yes)", icon: "👍", word: "Yes", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Closed fist with thumb pointing straight up = Yes (1 hand only)", confidence: 98 },
-  { id: "thumbsdown", name: "Thumbs Down (No)", icon: "👎", word: "No", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Closed fist with thumb pointing straight down = No (1 hand only)", confidence: 96 },
-  { id: "peace", name: "Peace / Victory / V", icon: "✌️", word: "Peace", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index and middle extended spread apart, others curled (1 hand only)", confidence: 96 },
-  { id: "ily", name: "I Love You (ILY)", icon: "🤟", word: "I love you", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Thumb, index, and pinky extended; middle and ring curled (1 hand only)", confidence: 98 },
-  { id: "palm", name: "Flat Palm Forward", icon: "✋", word: "Wait a moment", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "4 fingers together straight up, palm vertical (1 hand only)", confidence: 94 },
-  { id: "ok", name: "OK Circle", icon: "👌", word: "I understand", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Thumb and index tips touching in O, other 3 fingers extended (1 hand only)", confidence: 97 },
-  { id: "fist", name: "Closed Fist", icon: "✊", word: "Solid / Fist", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Tight closed fist with thumb wrapped across (1 hand only)", confidence: 94 },
-  { id: "point", name: "Index Pointing", icon: "☝️", word: "You / One", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index finger extended straight up, all other fingers curled (1 hand only)", confidence: 96 },
-  { id: "callme", name: "Call Me / Shaka", icon: "🤙", word: "Call me / Later", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Thumb and pinky extended outwards, middle 3 curled (1 hand only)", confidence: 96 },
-  { id: "rock", name: "Rock On / Horns", icon: "🤘", word: "Awesome", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index and pinky up, middle/ring curled, thumb folded over (1 hand only)", confidence: 96 },
-  { id: "pinch", name: "Pinch / Little Bit", icon: "🤏", word: "A little bit", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Small gap between thumb tip and index tip, others curled (1 hand only)", confidence: 94 },
-  { id: "crossed", name: "Crossed Fingers", icon: "🤞", word: "Good luck", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index and middle extended and crossed over each other (1 hand only)", confidence: 95 },
-  { id: "bunched", name: "Bunched / Delicious", icon: "🤌", word: "Eat / Food", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "All 5 fingertips touching in a cluster pointing up (1 hand only)", confidence: 96 },
-  { id: "fingerheart", name: "Finger Heart", icon: "🫰", word: "Love", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Thumb and index crossed in a mini heart (1 hand only)", confidence: 95 },
+  { id: "wave", name: "Wave / Hello", icon: "Hand", word: "Hello", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Open palm waving side-to-side or held upright (Motion Sign)", confidence: 98 },
+  { id: "thank_you", name: "Thank You (Forward Motion)", icon: "HeartHandshake", word: "Thank you", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Flat open palm moving forward from chin towards person (Motion Sign)", confidence: 98 },
+  { id: "happy", name: "Happy (Upward Brush)", icon: "Smile", word: "Happy", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Open palm brushing repeatedly upward against chest (Motion Sign)", confidence: 98 },
+  { id: "thumbsup", name: "Thumbs Up (Yes)", icon: "Check", word: "Yes", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Closed fist with thumb pointing straight up = Yes (1 hand only)", confidence: 98 },
+  { id: "thumbsdown", name: "Thumbs Down (No)", icon: "X", word: "No", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Closed fist with thumb pointing straight down = No (1 hand only)", confidence: 96 },
+  { id: "peace", name: "Peace / Victory / V", icon: "Activity", word: "Peace", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index and middle extended spread apart, others curled (1 hand only)", confidence: 96 },
+  { id: "ily", name: "I Love You (ILY)", icon: "Heart", word: "I love you", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Thumb, index, and pinky extended; middle and ring curled (1 hand only)", confidence: 98 },
+  { id: "palm", name: "Flat Palm Forward", icon: "Shield", word: "Wait a moment", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "4 fingers together straight up, palm vertical (1 hand only)", confidence: 94 },
+  { id: "ok", name: "OK Circle", icon: "CheckCircle2", word: "I understand", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Thumb and index tips touching in O, other 3 fingers extended (1 hand only)", confidence: 97 },
+  { id: "fist", name: "Closed Fist", icon: "Square", word: "Solid / Fist", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Tight closed fist with thumb wrapped across (1 hand only)", confidence: 94 },
+  { id: "point", name: "Index Pointing", icon: "Navigation", word: "You / One", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index finger extended straight up, all other fingers curled (1 hand only)", confidence: 96 },
+  { id: "callme", name: "Call Me / Shaka", icon: "Phone", word: "Call me / Later", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Thumb and pinky extended outwards, middle 3 curled (1 hand only)", confidence: 96 },
+  { id: "rock", name: "Rock On / Horns", icon: "Zap", word: "Awesome", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index and pinky up, middle/ring curled, thumb folded over (1 hand only)", confidence: 96 },
+  { id: "pinch", name: "Pinch / Little Bit", icon: "Crosshair", word: "A little bit", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Small gap between thumb tip and index tip, others curled (1 hand only)", confidence: 94 },
+  { id: "crossed", name: "Crossed Fingers", icon: "ShieldCheck", word: "Good luck", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index and middle extended and crossed over each other (1 hand only)", confidence: 95 },
+  { id: "bunched", name: "Bunched / Delicious", icon: "Utensils", word: "Eat / Food", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "All 5 fingertips touching in a cluster pointing up (1 hand only)", confidence: 96 },
+  { id: "fingerheart", name: "Finger Heart", icon: "Heart", word: "Love", category: "basics", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Thumb and index crossed in a mini heart (1 hand only)", confidence: 95 },
 
   // --- Numbers (Single-Hand Only: Never Signed With Two Hands) ---
-  { id: "num_zero", name: "Number 0 (Oval)", icon: "0️⃣", word: "Zero", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Fingertips curled touching thumb tip in oval (1 hand only)", confidence: 94 },
-  { id: "num_one", name: "Number 1 (Index)", icon: "1️⃣", word: "One", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Single index finger pointed up (1 hand only)", confidence: 96 },
-  { id: "num_two", name: "Number 2 (Two Fingers)", icon: "2️⃣", word: "Two", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index and middle fingers extended (1 hand only)", confidence: 96 },
-  { id: "num_three", name: "Number 3 (Three Fingers)", icon: "3️⃣", word: "Three", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index, middle, and ring fingers extended (1 hand only)", confidence: 95 },
-  { id: "num_four", name: "Number 4 (Four Fingers)", icon: "4️⃣", word: "Four", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Four fingers extended, thumb folded across palm (1 hand only)", confidence: 95 },
-  { id: "num_five", name: "Number 5 (Full Hand)", icon: "5️⃣", word: "Five", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "All five fingers extended and spread (1 hand only)", confidence: 97 },
-  { id: "num_six", name: "Number 6 (Thumb-Pinky)", icon: "6️⃣", word: "Six", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "ASL 6: Thumb and pinky touching, index/middle/ring extended (1 hand only)", confidence: 94 },
-  { id: "num_seven", name: "Number 7 (Thumb-Ring)", icon: "7️⃣", word: "Seven", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "ASL 7: Thumb and ring touching, index/middle/pinky extended (1 hand only)", confidence: 94 },
-  { id: "num_eight", name: "Number 8 (Thumb-Middle)", icon: "8️⃣", word: "Eight", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "ASL 8: Thumb and middle touching, index/ring/pinky extended (1 hand only)", confidence: 94 },
-  { id: "num_nine", name: "Number 9 (Thumb-Index)", icon: "9️⃣", word: "Nine", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "ASL 9: Thumb and index touching, 3 fingers up (1 hand only)", confidence: 95 },
+  { id: "num_zero", name: "Number 0 (Oval)", icon: "0", word: "Zero", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Fingertips curled touching thumb tip in oval (1 hand only)", confidence: 94 },
+  { id: "num_one", name: "Number 1 (Index)", icon: "1", word: "One", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Single index finger pointed up (1 hand only)", confidence: 96 },
+  { id: "num_two", name: "Number 2 (Two Fingers)", icon: "2", word: "Two", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index and middle fingers extended (1 hand only)", confidence: 96 },
+  { id: "num_three", name: "Number 3 (Three Fingers)", icon: "3", word: "Three", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index, middle, and ring fingers extended (1 hand only)", confidence: 95 },
+  { id: "num_four", name: "Number 4 (Four Fingers)", icon: "4", word: "Four", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Four fingers extended, thumb folded across palm (1 hand only)", confidence: 95 },
+  { id: "num_five", name: "Number 5 (Full Hand)", icon: "5", word: "Five", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "All five fingers extended and spread (1 hand only)", confidence: 97 },
+  { id: "num_six", name: "Number 6 (Thumb-Pinky)", icon: "6", word: "Six", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "ASL 6: Thumb and pinky touching, index/middle/ring extended (1 hand only)", confidence: 94 },
+  { id: "num_seven", name: "Number 7 (Thumb-Ring)", icon: "7", word: "Seven", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "ASL 7: Thumb and ring touching, index/middle/pinky extended (1 hand only)", confidence: 94 },
+  { id: "num_eight", name: "Number 8 (Thumb-Middle)", icon: "8", word: "Eight", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "ASL 8: Thumb and middle touching, index/ring/pinky extended (1 hand only)", confidence: 94 },
+  { id: "num_nine", name: "Number 9 (Thumb-Index)", icon: "9", word: "Nine", category: "numbers", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "ASL 9: Thumb and index touching, 3 fingers up (1 hand only)", confidence: 95 },
 
   // --- Manual Alphabet Letters (Single-Hand Only: Standard Manual Alphabet) ---
-  { id: "letter_l", name: "Letter L (Right Angle)", icon: "🇱", word: "Letter L", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index finger vertical and thumb horizontal at 90° angle (1 hand only)", confidence: 97 },
-  { id: "letter_c", name: "Letter C (Curved Arc)", icon: "©️", word: "Letter C", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Hand curved like letter C (1 hand only)", confidence: 94 },
-  { id: "letter_b", name: "Letter B (Flat 4 Up)", icon: "🅱️", word: "Letter B", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Four fingers together straight up, thumb folded across palm (1 hand only)", confidence: 95 },
-  { id: "letter_a", name: "Letter A (Side Thumb)", icon: "🅰️", word: "Letter A", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Fist with thumb resting straight up alongside index knuckle (1 hand only)", confidence: 94 },
-  { id: "letter_d", name: "Letter D (Index Up, Loop)", icon: "🇩", word: "Letter D", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index straight up with thumb and other fingers forming a circle (1 hand only)", confidence: 95 },
-  { id: "letter_o", name: "Letter O (Circle)", icon: "🅾️", word: "Letter O", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "All fingertips meeting thumb in circular O shape (1 hand only)", confidence: 95 },
-  { id: "letter_u", name: "Letter U (Together)", icon: "🇺", word: "Letter U", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index and middle extended and held tightly together (1 hand only)", confidence: 95 },
-  { id: "letter_w", name: "Letter W (3 Spread Up)", icon: "🖖", word: "Letter W", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Index, middle, and ring fingers spread apart in W shape (1 hand only)", confidence: 95 },
-  { id: "letter_i", name: "Letter I (Pinky Only)", icon: "ℹ️", word: "Letter I", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "🖐️ 1 Hand Only", description: "Pinky extended straight up, all other fingers curled (1 hand only)", confidence: 96 },
+  { id: "letter_l", name: "Letter L (Right Angle)", icon: "L", word: "Letter L", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index finger vertical and thumb horizontal at 90° angle (1 hand only)", confidence: 97 },
+  { id: "letter_c", name: "Letter C (Curved Arc)", icon: "C", word: "Letter C", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Hand curved like letter C (1 hand only)", confidence: 94 },
+  { id: "letter_b", name: "Letter B (Flat 4 Up)", icon: "B", word: "Letter B", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Four fingers together straight up, thumb folded across palm (1 hand only)", confidence: 95 },
+  { id: "letter_a", name: "Letter A (Side Thumb)", icon: "A", word: "Letter A", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Fist with thumb resting straight up alongside index knuckle (1 hand only)", confidence: 94 },
+  { id: "letter_d", name: "Letter D (Index Up, Loop)", icon: "D", word: "Letter D", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index straight up with thumb and other fingers forming a circle (1 hand only)", confidence: 95 },
+  { id: "letter_o", name: "Letter O (Circle)", icon: "O", word: "Letter O", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "All fingertips meeting thumb in circular O shape (1 hand only)", confidence: 95 },
+  { id: "letter_u", name: "Letter U (Together)", icon: "U", word: "Letter U", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index and middle extended and held tightly together (1 hand only)", confidence: 95 },
+  { id: "letter_w", name: "Letter W (3 Spread Up)", icon: "W", word: "Letter W", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Index, middle, and ring fingers spread apart in W shape (1 hand only)", confidence: 95 },
+  { id: "letter_i", name: "Letter I (Pinky Only)", icon: "I", word: "Letter I", category: "letters", isTwoHanded: false, singleHandOnly: true, hands: 1, handBadge: "1-Hand Protocol", description: "Pinky extended straight up, all other fingers curled (1 hand only)", confidence: 96 },
 ];
 
 /**
@@ -342,7 +342,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
         return {
           id: bestCustom.id,
           name: bestCustom.name,
-          icon: bestCustom.icon || "✋",
+          icon: bestCustom.icon || "Hand",
           word: bestCustom.word || bestCustom.name,
           confidence: Math.round(highestSim * 100),
           isCustom: true,
@@ -366,7 +366,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
             ...gestureMeta,
             confidence: Math.round(aiResult.confidence * 100),
             isAIPrediction: true,
-            modelBadge: "🧠 AI Neural Net",
+            modelBadge: "AI Neural Net",
           };
         }
       }
@@ -492,7 +492,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
   const isThumbTuckedAcross = isThumbCurled && dist3D(thumbTip, indexMcp) < palmScale * 0.38;
 
   if (motionFeatures) {
-    // 0A. Waving Motion (Wave / Hello 👋)
+    // 0A. Waving Motion (Wave / Hello )
     // Horizontal side-to-side oscillation with open palm
     if (
       motionFeatures.isWaving &&
@@ -502,15 +502,15 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
       return {
         id: "wave",
         name: "Wave / Hello",
-        icon: "👋",
+        icon: "Hand",
         word: "Hello",
         confidence: 99,
         isDynamicMotion: true,
-        motionLabel: "🌊 Waving Motion",
+        motionLabel: "Waving Motion",
       };
     }
 
-    // 0B. Forward / Outward Stroke (Thank You 🙏)
+    // 0B. Forward / Outward Stroke (Thank You )
     // Flat palm starting near chin/mouth and moving forward/downward toward person
     if (
       motionFeatures.isForwardStroke &&
@@ -520,15 +520,15 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
       return {
         id: "thank_you",
         name: "Thank You (Forward Motion)",
-        icon: "🙏",
+        icon: "HeartHandshake",
         word: "Thank you",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "➡️ Forward Stroke (Thank You)",
+        motionLabel: "Forward Stroke",
       };
     }
 
-    // 0C. Upward Brushing Stroke (Happy 😊)
+    // 0C. Upward Brushing Stroke (Happy )
     // Open flat palm brushing upward against chest towards chin
     if (
       motionFeatures.isUpwardStroke &&
@@ -537,15 +537,15 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
       return {
         id: "happy",
         name: "Happy (Upward Brush)",
-        icon: "😊",
+        icon: "Smile",
         word: "Happy",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "⬆️ Upward Brush (Happy)",
+        motionLabel: "Upward Brush",
       };
     }
 
-    // 0D. Vertical Fist Nodding (Yes 👍)
+    // 0D. Vertical Fist Nodding (Yes )
     if (
       motionFeatures.isNodding &&
       curledCount >= 3 &&
@@ -554,15 +554,15 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
       return {
         id: "thumbsup",
         name: "Yes (Nodding Fist)",
-        icon: "👍",
+        icon: "Check",
         word: "Yes",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "↕️ Nodding Motion (Yes)",
+        motionLabel: "Vertical Nod",
       };
     }
 
-    // 0E. Horizontal Shaking (No 🚫)
+    // 0E. Horizontal Shaking (No )
     if (
       motionFeatures.isShaking &&
       (isIndexExt || extendedCount >= 3)
@@ -570,11 +570,11 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
       return {
         id: "thumbsdown",
         name: "No (Shaking Motion)",
-        icon: "👎",
+        icon: "X",
         word: "No",
         confidence: 97,
         isDynamicMotion: true,
-        motionLabel: "↔️ Shaking Motion (No)",
+        motionLabel: "Horizontal Shake",
       };
     }
   }
@@ -583,38 +583,38 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
   // Mutually Exclusive Geometric Rules (Angle & Rotation Invariant)
   // ─────────────────────────────────────────────────────────────────────────
 
-  // 1. Bunched / Food (🤌)
+  // 1. Bunched / Food ()
   if (isAllBunched) {
-    return { id: "bunched", name: "Bunched / Food", icon: "🤌", word: "Eat / Food", confidence: 96 };
+    return { id: "bunched", name: "Bunched / Food", icon: "Utensils", word: "Eat / Food", confidence: 96 };
   }
 
-  // 2. Finger Heart (🫰 "Love")
+  // 2. Finger Heart ( "Love")
   // Thumb and index fingertips crossed over each other in mini-heart; other 3 fingers curled
   if (
     isMiddleCurled && isRingCurled && isPinkyCurled &&
     t2i >= palmScale * 0.08 && t2i <= palmScale * 0.32 &&
     dist3D(indexTip, indexMcp) < palmScale * 1.15
   ) {
-    return { id: "fingerheart", name: "Finger Heart", icon: "🫰", word: "Love", confidence: 95 };
+    return { id: "fingerheart", name: "Finger Heart", icon: "Heart", word: "Love", confidence: 95 };
   }
 
-  // 3. Pinch / Little Bit (🤏)
+  // 3. Pinch / Little Bit ()
   if (
     isIndexCurled && isMiddleCurled && isRingCurled && isPinkyCurled &&
     t2i >= palmScale * 0.12 && t2i <= palmScale * 0.26
   ) {
-    return { id: "pinch", name: "Pinch / Little Bit", icon: "🤏", word: "A little bit", confidence: 94 };
+    return { id: "pinch", name: "Pinch / Little Bit", icon: "Crosshair", word: "A little bit", confidence: 94 };
   }
 
-  // 4. Crossed Fingers / Good Luck (🤞)
+  // 4. Crossed Fingers / Good Luck ()
   if (
     isIndexExt && isMiddleExt && isRingCurled && isPinkyCurled &&
     dist3D(indexTip, middleTip) < palmScale * 0.18
   ) {
-    return { id: "crossed", name: "Crossed Fingers", icon: "🤞", word: "Good luck", confidence: 95 };
+    return { id: "crossed", name: "Crossed Fingers", icon: "ShieldCheck", word: "Good luck", confidence: 95 };
   }
 
-  // 5. Thumbs Up / Yes (👍)
+  // 5. Thumbs Up / Yes ()
   // Tight closed fist with thumb pointing up along hand axis or camera vertical = "Yes"
   if (
     isThumbPointingUp &&
@@ -622,10 +622,10 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     !isIndexExt && !isMiddleExt && !isRingExt && !isPinkyExt &&
     dist3D(thumbTip, indexMcp) > palmScale * 0.35
   ) {
-    return { id: "thumbsup", name: "Thumbs Up (Yes)", icon: "👍", word: "Yes", confidence: 98 };
+    return { id: "thumbsup", name: "Thumbs Up (Yes)", icon: "Check", word: "Yes", confidence: 98 };
   }
 
-  // 6. Thumbs Down / No (👎)
+  // 6. Thumbs Down / No ()
   // Tight closed fist with thumb pointing down along arm axis or camera vertical = "No"
   // NEVER matches on heart, pinch, or open hands!
   const isTightThumbsDownFist =
@@ -635,19 +635,19 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     dist3D(thumbTip, indexMcp) > palmScale * 0.30; // Not tucked inside fist like closed fist!
 
   if (isThumbPointingDown && isTightThumbsDownFist) {
-    return { id: "thumbsdown", name: "Thumbs Down (No)", icon: "👎", word: "No", confidence: 96 };
+    return { id: "thumbsdown", name: "Thumbs Down (No)", icon: "X", word: "No", confidence: 96 };
   }
 
-  // 7. Letter L (🇱) - Index vertical along hand axis, thumb sticking out perpendicular
+  // 7. Letter L () - Index vertical along hand axis, thumb sticking out perpendicular
   if (
     isIndexExt && isMiddleCurled && isRingCurled && isPinkyCurled &&
     (isThumbExt || Math.abs(thumbSideDot) > 0.45) &&
     dist3D(thumbTip, indexTip) > palmScale * 0.65
   ) {
-    return { id: "letter_l", name: "Letter L / Look", icon: "🇱", word: "Letter L", confidence: 97 };
+    return { id: "letter_l", name: "Letter L / Look", icon: "L", word: "Letter L", confidence: 97 };
   }
 
-  // 8. ILY Sign (🤟 "I love you")
+  // 8. ILY Sign ( "I love you")
   // Thumb, index, and pinky extended; middle and ring curled
   if (
     (isThumbExt || isThumbPointingUp || Math.abs(thumbSideDot) > 0.45) &&
@@ -657,73 +657,73 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     isRingCurled &&
     dist3D(indexTip, pinkyTip) > palmScale * 0.50
   ) {
-    return { id: "ily", name: "I Love You (ILY)", icon: "🤟", word: "I love you", confidence: 98 };
+    return { id: "ily", name: "I Love You (ILY)", icon: "Heart", word: "I love you", confidence: 98 };
   }
 
-  // 9. Rock On / Horns (🤘)
+  // 9. Rock On / Horns ()
   if (isIndexExt && isPinkyExt && isMiddleCurled && isRingCurled && !isThumbExt) {
-    return { id: "rock", name: "Rock On / Horns", icon: "🤘", word: "Awesome", confidence: 96 };
+    return { id: "rock", name: "Rock On / Horns", icon: "Zap", word: "Awesome", confidence: 96 };
   }
 
-  // 10. Call Me / Shaka (🤙)
+  // 10. Call Me / Shaka ()
   if (isThumbExt && isPinkyExt && isIndexCurled && isMiddleCurled && isRingCurled) {
-    return { id: "callme", name: "Call Me / Shaka", icon: "🤙", word: "Call me / Later", confidence: 96 };
+    return { id: "callme", name: "Call Me / Shaka", icon: "Phone", word: "Call me / Later", confidence: 96 };
   }
 
   // 11. Pinky Only / Letter I (ℹ️)
   if (isPinkyExt && isIndexCurled && isMiddleCurled && isRingCurled && !isThumbExt) {
-    return { id: "letter_i", name: "Letter I (Pinky)", icon: "ℹ️", word: "Letter I", confidence: 96 };
+    return { id: "letter_i", name: "Letter I (Pinky)", icon: "I", word: "Letter I", confidence: 96 };
   }
 
-  // 12. OK Sign / ASL 9 (👌 / 9️⃣)
+  // 12. OK Sign / ASL 9 ( / 9️⃣)
   if (isThumbIndexPinch && isMiddleExt && isRingExt && isPinkyExt) {
-    return { id: "ok", name: "OK / Understood", icon: "👌", word: "I understand", confidence: 97 };
+    return { id: "ok", name: "OK / Understood", icon: "CheckCircle2", word: "I understand", confidence: 97 };
   }
 
   // 13. ASL Number 8 (8️⃣)
   if (isThumbMiddlePinch && isIndexExt && isRingExt && isPinkyExt && !isThumbIndexPinch) {
-    return { id: "num_eight", name: "Number 8", icon: "8️⃣", word: "Eight", confidence: 95 };
+    return { id: "num_eight", name: "Number 8", icon: "8", word: "Eight", confidence: 95 };
   }
 
   // 14. ASL Number 7 (7️⃣)
   if (isThumbRingPinch && isIndexExt && isMiddleExt && isPinkyExt && !isThumbIndexPinch) {
-    return { id: "num_seven", name: "Number 7", icon: "7️⃣", word: "Seven", confidence: 95 };
+    return { id: "num_seven", name: "Number 7", icon: "7", word: "Seven", confidence: 95 };
   }
 
   // 15. ASL Number 6 (6️⃣)
   if (isThumbPinkyPinch && isIndexExt && isMiddleExt && isRingExt && !isThumbIndexPinch) {
-    return { id: "num_six", name: "Number 6", icon: "6️⃣", word: "Six", confidence: 95 };
+    return { id: "num_six", name: "Number 6", icon: "6", word: "Six", confidence: 95 };
   }
 
-  // 16. Peace / Victory / Number 2 (✌️ / 2️⃣)
+  // 16. Peace / Victory / Number 2 (️ / 2️⃣)
   if (
     isIndexExt && isMiddleExt && isRingCurled && isPinkyCurled &&
     dist3D(indexTip, middleTip) > palmScale * 0.26 && !isThumbIndexPinch
   ) {
-    return { id: "peace", name: "Peace / Two", icon: "✌️", word: "Two / Peace", confidence: 97 };
+    return { id: "peace", name: "Peace / Two", icon: "Activity", word: "Two / Peace", confidence: 97 };
   }
 
-  // 17. Letter U (🇺)
+  // 17. Letter U ()
   if (
     isIndexExt && isMiddleExt && isRingCurled && isPinkyCurled &&
     dist3D(indexTip, middleTip) <= palmScale * 0.22 && !isThumbIndexPinch
   ) {
-    return { id: "letter_u", name: "Letter U", icon: "🇺", word: "Letter U", confidence: 95 };
+    return { id: "letter_u", name: "Letter U", icon: "U", word: "Letter U", confidence: 95 };
   }
 
-  // 18. Letter W / Number 3 (🖖 / 3️⃣)
+  // 18. Letter W / Number 3 ( / 3️⃣)
   if (isIndexExt && isMiddleExt && isRingExt && isPinkyCurled) {
-    return { id: "num_three", name: "Three / Letter W", icon: "🖖", word: "Three", confidence: 96 };
+    return { id: "num_three", name: "Three / Letter W", icon: "W", word: "Three", confidence: 96 };
   }
 
-  // 19. Open Palm / Wave / Hello (👋 / 5️⃣)
+  // 19. Open Palm / Wave / Hello ( / 5️⃣)
   // When an open hand is raised facing the camera with 4 or 5 extended fingers and thumb not tucked
   if (
     (extendedCount === 4 || (extendedCount === 3 && isIndexExt && isMiddleExt && isRingExt && !isPinkyCurled)) &&
     !isThumbTuckedAcross &&
     !isThumbIndexPinch
   ) {
-    return { id: "wave", name: "Wave / Open Palm", icon: "👋", word: "Hello", confidence: 97 };
+    return { id: "wave", name: "Wave / Open Palm", icon: "Hand", word: "Hello", confidence: 97 };
   }
 
   // 20. Number 4 (4️⃣) - 4 fingers spread upright, thumb tucked across palm
@@ -732,23 +732,23 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     dist3D(indexTip, middleTip) > palmScale * 0.18;
 
   if (extendedCount === 4 && isThumbTuckedAcross && isFourFingersSpread) {
-    return { id: "num_four", name: "Number 4", icon: "4️⃣", word: "Four", confidence: 96 };
+    return { id: "num_four", name: "Number 4", icon: "4", word: "Four", confidence: 96 };
   }
 
-  // 21. Letter B (🅱️) - 4 fingers together upright, thumb tucked across palm
+  // 21. Letter B (️) - 4 fingers together upright, thumb tucked across palm
   const isFourFingersTogether = dist3D(indexTip, pinkyTip) <= palmScale * 0.58;
   if (isIndexExt && isMiddleExt && isRingExt && isPinkyExt && isFourFingersTogether && isThumbTuckedAcross) {
-    return { id: "letter_b", name: "Letter B", icon: "🅱️", word: "Letter B", confidence: 96 };
+    return { id: "letter_b", name: "Letter B", icon: "B", word: "Letter B", confidence: 96 };
   }
 
-  // 22. Flat Palm Forward / Stop (✋)
+  // 22. Flat Palm Forward / Stop ()
   if (extendedCount === 4) {
-    return { id: "palm", name: "Flat Palm / Stop", icon: "✋", word: "Wait a moment", confidence: 95 };
+    return { id: "palm", name: "Flat Palm / Stop", icon: "Shield", word: "Wait a moment", confidence: 95 };
   }
 
-  // 23. Pointing / Number 1 (☝️ / 1️⃣)
+  // 23. Pointing / Number 1 (️ / 1️⃣)
   if (isIndexExt && isMiddleCurled && isRingCurled && isPinkyCurled && !isThumbPointingUp) {
-    return { id: "point", name: "Pointing / One", icon: "☝️", word: "You / One", confidence: 96 };
+    return { id: "point", name: "Pointing / One", icon: "Navigation", word: "You / One", confidence: 96 };
   }
 
   // 24. Letter C (©️)
@@ -756,31 +756,31 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     t2i > palmScale * 0.45 && t2i < palmScale * 0.75 &&
     !isIndexExt && !isIndexCurled && !isMiddleExt && !isMiddleCurled
   ) {
-    return { id: "letter_c", name: "Letter C", icon: "©️", word: "Letter C", confidence: 94 };
+    return { id: "letter_c", name: "Letter C", icon: "C", word: "Letter C", confidence: 94 };
   }
 
-  // 25. Number 0 / Letter O (0️⃣ / 🅾️)
+  // 25. Number 0 / Letter O (0️⃣ / ️)
   if (
     t2i < palmScale * 0.28 &&
     t2m < palmScale * 0.32 &&
     t2r < palmScale * 0.36 &&
     !isIndexExt && !isMiddleExt
   ) {
-    return { id: "letter_o", name: "Letter O / Zero", icon: "🅾️", word: "Letter O", confidence: 95 };
+    return { id: "letter_o", name: "Letter O / Zero", icon: "O", word: "Letter O", confidence: 95 };
   }
 
-  // 26. Letter A (🅰️)
+  // 26. Letter A (️)
   if (
     curledCount === 4 &&
     dist3D(thumbTip, indexPip) < palmScale * 0.38 &&
     !isThumbPointingDown
   ) {
-    return { id: "letter_a", name: "Letter A", icon: "🅰️", word: "Letter A", confidence: 94 };
+    return { id: "letter_a", name: "Letter A", icon: "A", word: "Letter A", confidence: 94 };
   }
 
-  // 27. Closed Fist (✊)
+  // 27. Closed Fist ()
   if (curledCount === 4 && isThumbCurled) {
-    return { id: "fist", name: "Closed Fist", icon: "✊", word: "Solid / Fist", confidence: 94 };
+    return { id: "fist", name: "Closed Fist", icon: "Square", word: "Solid / Fist", confidence: 94 };
   }
 
   return null;
@@ -797,7 +797,7 @@ export function classifySingleHand(landmarks, customGestures = [], motionFeature
     isTwoHanded: false,
     singleHandOnly: true,
     hands: 1,
-    handBadge: "🖐️ 1 Hand Only",
+    handBadge: "1-Hand Protocol",
   };
 }
 
@@ -915,39 +915,39 @@ export function classifyHandGesture(multiLandmarks, customGestures = [], motionF
       const distIndex = dist2D(indexTipA, indexTipB);
       const distWrists = dist2D(wristA, wristB);
 
-      // (A) Two-Handed Heart (🫶)
+      // (A) Two-Handed Heart ()
       if (distThumbs < 0.24 && distIndex < 0.24 && distWrists < 0.44) {
         return {
           id: "two_heart",
           name: "Two-Handed Heart",
-          icon: "🫶",
+          icon: "Heart",
           word: "Love / Care",
           confidence: 99,
           isTwoHanded: true,
           singleHandOnly: false,
           hands: 2,
-          handBadge: "👐 2 Hands",
+          handBadge: "Dual-Hand Protocol",
         };
       }
 
-      // (B) Double Thumbs Up (👍👍)
+      // (B) Double Thumbs Up ()
       const gestureA = classifySingleHand(handA, customGestures, motionFeatures);
       const gestureB = classifySingleHand(handB, customGestures, motionFeatures);
       if (gestureA?.id === "thumbsup" && gestureB?.id === "thumbsup") {
         return {
           id: "two_thumbsup",
           name: "Double Thumbs Up",
-          icon: "👍👍",
+          icon: "ThumbsUp",
           word: "Awesome / Great job",
           confidence: 99,
           isTwoHanded: true,
           singleHandOnly: false,
           hands: 2,
-          handBadge: "👐 2 Hands",
+          handBadge: "Dual-Hand Protocol",
         };
       }
 
-      // (D) Two-Handed Happy (😊 Upward Brushing Motion with Both Hands)
+      // (D) Two-Handed Happy ( Upward Brushing Motion with Both Hands)
       if (
         motionFeatures?.isUpwardStroke ||
         (gestureA?.id === "happy" && gestureB?.id === "happy")
@@ -955,44 +955,44 @@ export function classifyHandGesture(multiLandmarks, customGestures = [], motionF
         return {
           id: "happy",
           name: "Happy (Two-Handed)",
-          icon: "😊",
+          icon: "Smile",
           word: "Happy",
           confidence: 99,
           isTwoHanded: true,
           singleHandOnly: false,
           hands: 2,
-          handBadge: "👐 2 Hands",
-          motionLabel: "⬆️ Upward Brush (Happy)",
+          handBadge: "Dual-Hand Protocol",
+          motionLabel: "Upward Brush",
         };
       }
 
-      // (E) Clap / Applause (👏)
+      // (E) Clap / Applause ()
       if (distPalms < 0.14 && distWrists < 0.22) {
         return {
           id: "two_clap",
           name: "Clap / Applause",
-          icon: "👏",
+          icon: "Sparkles",
           word: "Congratulations / Good job",
           confidence: 97,
           isTwoHanded: true,
           singleHandOnly: false,
           hands: 2,
-          handBadge: "👐 2 Hands",
+          handBadge: "Dual-Hand Protocol",
         };
       }
 
-      // (F) Open Both Hands / Welcome (🤗)
+      // (F) Open Both Hands / Welcome ()
       if (gestureA?.id === "wave" && gestureB?.id === "wave") {
         return {
           id: "two_welcome",
           name: "Open Hands / Welcome",
-          icon: "🤗",
+          icon: "Users",
           word: "Welcome / Together",
           confidence: 97,
           isTwoHanded: true,
           singleHandOnly: false,
           hands: 2,
-          handBadge: "👐 2 Hands",
+          handBadge: "Dual-Hand Protocol",
         };
       }
 
@@ -1022,7 +1022,16 @@ export function clearSmoothedLandmarks() {
 /**
  * Draws real hand skeleton and tracking overlays for BOTH hands on canvas.
  */
-export function drawHandTracking(ctx, multiLandmarks, width, height, currentGesture, motionFeatures = null) {
+export function drawHandTracking(
+  ctx,
+  multiLandmarks,
+  width,
+  height,
+  currentGesture,
+  motionFeatures = null,
+  dwellProgress = 0,
+  isMedical = false
+) {
   if (!multiLandmarks || multiLandmarks.length === 0) {
     smoothedLandmarksMap.clear();
     ctx.clearRect(0, 0, width, height);
@@ -1173,7 +1182,7 @@ export function drawHandTracking(ctx, multiLandmarks, width, height, currentGest
     if (isMatched && (currentGesture.isTwoHanded || handIndex === 0)) {
       const modeSuffix = currentGesture.isTwoHanded ? "[2 HANDS]" : "[1 HAND ONLY]";
       const motionTag = currentGesture.motionLabel ? ` ${currentGesture.motionLabel}` : "";
-      tagText = `${currentGesture.icon} ${currentGesture.name}: "${currentGesture.word}" ${modeSuffix}${motionTag} (${currentGesture.confidence}%)`;
+      tagText = `${currentGesture.name}: "${currentGesture.word}" ${modeSuffix}${motionTag} (${currentGesture.confidence}%)`;
     } else if (motionFeatures?.motionType && motionFeatures.motionType !== "still") {
       tagText = `● MOTION: ${motionFeatures.motionType.toUpperCase().replace("_", " ")} DETECTED`;
     } else if (multiLandmarks.length > 1) {
@@ -1190,5 +1199,46 @@ export function drawHandTracking(ctx, multiLandmarks, width, height, currentGest
 
     ctx.fillStyle = isMatched ? "#4ade80" : "#ffffff";
     ctx.fillText(tagText, minX + 8, Math.max(14, minY - 9));
+
+    // 4. Medical Closed-Loop Dwell Confirmation Ring (Multi-frame stabilization)
+    if (dwellProgress > 0 && handIndex === 0 && pts[9]) {
+      const centerX = pts[9].x;
+      const centerY = pts[9].y;
+      const radius = 34;
+
+      ctx.save();
+      // Outer subtle glow
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius + 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Background Track Ring
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Progress Arc
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + dwellProgress * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.strokeStyle = dwellProgress >= 1.0 ? "#22c55e" : "#00d2ff";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      // Percentage Center Text
+      ctx.font = "bold 10px monospace";
+      ctx.fillStyle = dwellProgress >= 1.0 ? "#4ade80" : "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const pctText = dwellProgress >= 1.0 ? "LOCK" : `${Math.round(dwellProgress * 100)}%`;
+      ctx.fillText(pctText, centerX, centerY);
+      ctx.restore();
+    }
   });
 }
