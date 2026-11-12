@@ -27,3 +27,9 @@ Thumbs.db
 
 # Large training arrays
 *.npy
+
+# Python virtual environment & cache
+.venv/
+*/.venv/
+__pycache__/
+*.pyc

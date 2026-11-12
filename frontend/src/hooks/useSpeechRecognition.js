@@ -165,7 +165,31 @@ export const useSpeechRecognition = () => {
     rec.lang           = "en-US";
     rec.continuous     = true;
     rec.interimResults = true;
-    rec.maxAlternatives = 1;
+    rec.maxAlternatives = 3;
+
+    // Bias speech recognition toward medical vocabulary
+    if (window.SpeechGrammarList || window.webkitSpeechGrammarList) {
+      const GrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+      const grammarList = new GrammarList();
+      const medicalTerms = [
+        "chest pain", "cannot breathe", "shortness of breath", "difficulty breathing",
+        "bleeding", "bleed", "dizzy", "dizziness", "faint", "fainting",
+        "allergic reaction", "allergy", "anaphylaxis",
+        "high fever", "fever", "temperature",
+        "medicine", "medication", "injection", "prescription",
+        "emergency", "urgent", "help",
+        "unconscious", "collapsed", "collapse",
+        "seizure", "convulsion", "stroke",
+        "nausea", "vomiting", "vomit",
+        "pain", "severe pain", "chest", "head", "stomach", "back", "arm", "leg",
+        "nurse", "doctor", "hospital", "ambulance",
+        "oxygen", "pulse", "blood pressure", "heart rate",
+        "fracture", "broken", "wound", "swollen", "numb", "rash"
+      ];
+      const grammar = `#JSGF V1.0; grammar medical; public <term> = ${medicalTerms.join(' | ')};`;
+      grammarList.addFromString(grammar, 1);
+      rec.grammars = grammarList;
+    }
 
     // Session-scoped state (not refs — lives inside the closure)
     let confirmedText   = "";     // all final words joined

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import GestureTerminal from "./GestureTerminal";
 import ThemeToggle from "./ThemeToggle";
+import TriageWizard from "./TriageWizard";
 import {
   Hand,
   ArrowLeft,
@@ -41,10 +42,33 @@ export default function PatientDashboard({
   onSwitchRole,
 }) {
   const [activePanel, setActivePanel] = useState(null); // null | "pain" | "urgent"
+  const [viewMode, setViewMode] = useState("camera"); // "camera" | "wizard"
   const [lastVocalized, setLastVocalized] = useState("");
 
   const clinicianMessages = conversationHistory.filter((m) => m.sender === "hearing");
   const latestDoctorMessage = clinicianMessages[clinicianMessages.length - 1];
+
+  const handleTriageComplete = (record) => {
+    const details = [
+      `Location: ${record.location || "not selected"}`,
+      `Pain: ${record.severity}/10`,
+      `Duration: ${record.duration || "not selected"}`,
+      `Medical history: ${record.history.join(", ") || "not provided"}`,
+      `Allergies: ${record.allergies.join(", ") || "not provided"}`,
+    ].join("; ");
+    const summary = `${record.chief_complaint} (${details})`;
+    setLastVocalized(record.chief_complaint);
+    if (onSendMessage) {
+      onSendMessage({
+        sender: "gesture",
+        text: summary,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isClinical: true,
+        record,
+        label: "Patient health information",
+      });
+    }
+  };
 
   const handleSpeakPhrase = (phrase, label = "Response") => {
     setLastVocalized(phrase);
@@ -96,16 +120,45 @@ export default function PatientDashboard({
       {/* ── Main Single-Stage Flow (Zero Cognitive Clutter) ── */}
       <main className="flex-1 min-h-0 max-w-4xl w-full mx-auto p-3 sm:p-4 flex flex-col gap-3 overflow-hidden">
         
-        {/* 1. Doctor's Spoken Words Banner */}
+        {/* 1. Doctor's Spoken Words Banner & Mode Toggle */}
         <div className="flex-shrink-0 bg-white dark:bg-dark-surface rounded-2xl border border-stone-200 dark:border-dark-border p-3.5 sm:p-4 shadow-xs">
           <div className="flex items-center justify-between text-[11px] font-semibold text-stone-400 mb-1">
             <span className="flex items-center gap-1.5 text-stone-500 dark:text-stone-300 font-bold uppercase tracking-wider text-[10px]">
               <MessageSquare size={12} className="text-teal-600" />
               <span>Doctor is saying:</span>
             </span>
-            {latestDoctorMessage && (
-              <span className="font-mono text-[10px]">{latestDoctorMessage.timestamp}</span>
-            )}
+            <div className="flex items-center gap-2">
+              {latestDoctorMessage && (
+                <span className="font-mono text-[10px] hidden sm:inline">{latestDoctorMessage.timestamp}</span>
+              )}
+              {/* Mode Toggle Switch */}
+              <div className="flex items-center bg-stone-100 dark:bg-dark-card p-0.5 rounded-lg border border-stone-200/80 dark:border-dark-border">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("camera")}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    viewMode === "camera"
+                      ? "bg-white dark:bg-dark-surface text-teal-700 dark:text-teal-400 shadow-2xs"
+                      : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
+                  }`}
+                >
+                  <Hand size={12} />
+                  <span>Signing</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("wizard")}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    viewMode === "wizard"
+                      ? "bg-white dark:bg-dark-surface text-teal-700 dark:text-teal-400 shadow-2xs"
+                      : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
+                  }`}
+                >
+                  <Zap size={12} />
+                  <span>Health Details</span>
+                </button>
+              </div>
+            </div>
           </div>
           <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
             {latestDoctorMessage ? (
@@ -118,24 +171,30 @@ export default function PatientDashboard({
           </p>
         </div>
 
-        {/* 2. Pristine Signing Camera Viewport */}
-        <div className="flex-1 min-h-0 relative rounded-3xl overflow-hidden bg-slate-950 border border-stone-200/40 dark:border-stone-800 shadow-card">
-          <GestureTerminal
-            onSendMessage={onSendMessage}
-            isFullFocus={true}
-            minimalMode={true}
-          />
+        {/* 2. Main Viewport: Guided health details or camera viewport */}
+        {viewMode === "wizard" ? (
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+            <TriageWizard onTriageComplete={handleTriageComplete} />
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 relative rounded-3xl overflow-hidden bg-slate-950 border border-stone-200/40 dark:border-stone-800 shadow-card">
+            <GestureTerminal
+              onSendMessage={onSendMessage}
+              isFullFocus={true}
+              minimalMode={true}
+            />
 
-          {/* Floating Vocalization Feedback Confirmation */}
-          {lastVocalized && (
-            <div className="absolute top-4 inset-x-0 flex items-center justify-center pointer-events-none z-30 px-4">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-md border border-white/20 text-white shadow-2xl text-xs sm:text-sm font-semibold animate-fade-in">
-                <Volume2 size={16} className="text-teal-400 flex-shrink-0" />
-                <span className="truncate">Spoken to doctor: "{lastVocalized}"</span>
+            {/* Floating Vocalization Feedback Confirmation */}
+            {lastVocalized && (
+              <div className="absolute top-4 inset-x-0 flex items-center justify-center pointer-events-none z-30 px-4">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-md border border-white/20 text-white shadow-2xl text-xs sm:text-sm font-semibold animate-fade-in">
+                  <Volume2 size={16} className="text-teal-400 flex-shrink-0" />
+                  <span className="truncate">Spoken to doctor: "{lastVocalized}"</span>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* 3. Auxiliary Drawer: Pain Scale (Expanded only when tapped) */}
         {activePanel === "pain" && (

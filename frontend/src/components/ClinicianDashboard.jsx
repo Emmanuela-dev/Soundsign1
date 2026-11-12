@@ -10,7 +10,6 @@ import {
   RotateCcw,
   Sparkles,
   CheckCircle2,
-  AlertCircle,
   MessageSquare,
   Zap,
 } from "lucide-react";
@@ -47,7 +46,6 @@ export default function ClinicianDashboard({
       submitText(text);
     }
   };
-
   const patientMessages = conversationHistory.filter((m) => m.sender === "gesture");
 
   return (
@@ -201,7 +199,9 @@ export default function ClinicianDashboard({
                     className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-xs text-slate-900 dark:text-white shadow-2xs"
                   >
                     <div className="flex items-center justify-between font-semibold text-sky-800 dark:text-sky-300 text-[10px] mb-1">
-                      <span>Deaf Patient</span>
+                      <div className="flex items-center gap-1.5">
+                        <span>Deaf Patient</span>
+                      </div>
                       <span className="font-mono text-stone-400">{msg.timestamp}</span>
                     </div>
                     <p className="font-medium text-xs sm:text-sm leading-snug">{msg.text}</p>
@@ -245,4 +245,3 @@ export default function ClinicianDashboard({
     </div>
   );
 }
-
