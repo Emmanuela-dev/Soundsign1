@@ -49,6 +49,7 @@ export default function ClinicianDashboard({
   };
 
   const patientMessages = conversationHistory.filter((m) => m.sender === "gesture");
+  const hasImmediateTriage = patientMessages.some((m) => m.priority === "IMMEDIATE");
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[#FAF9F6] dark:bg-dark-bg text-slate-900 dark:text-dark-text overflow-hidden select-none font-inter">
@@ -95,6 +96,19 @@ export default function ClinicianDashboard({
           <ThemeToggle />
         </div>
       </header>
+
+      {/* Critical Emergency Triage Banner */}
+      {hasImmediateTriage && (
+        <div className="flex-shrink-0 bg-rose-600 text-white px-4 py-2 flex items-center justify-between text-xs font-bold animate-pulse shadow-sm z-10">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} />
+            <span>CRITICAL ALERT: Patient reported an IMMEDIATE triage condition (Life-threatening / High Severity)</span>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full font-mono">
+            Priority 1
+          </span>
+        </div>
+      )}
 
       {/* ── Main Two-Column Stage ── */}
       <main className="flex-1 min-h-0 p-3 sm:p-4 lg:p-5 flex flex-col lg:flex-row gap-4 overflow-hidden">
@@ -201,7 +215,26 @@ export default function ClinicianDashboard({
                     className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-xs text-slate-900 dark:text-white shadow-2xs"
                   >
                     <div className="flex items-center justify-between font-semibold text-sky-800 dark:text-sky-300 text-[10px] mb-1">
-                      <span>Deaf Patient</span>
+                      <div className="flex items-center gap-1.5">
+                        <span>Deaf Patient</span>
+                        {msg.priority && (
+                          <span
+                            className={`px-1.5 py-0.2 rounded-md text-[9px] font-bold ${
+                              msg.priority === "IMMEDIATE"
+                                ? "bg-rose-600 text-white animate-pulse"
+                                : msg.priority === "URGENT"
+                                ? "bg-amber-500 text-white"
+                                : "bg-emerald-600 text-white"
+                            }`}
+                          >
+                            {msg.priority === "IMMEDIATE"
+                              ? "🔴 IMMEDIATE"
+                              : msg.priority === "URGENT"
+                              ? "🟠 URGENT"
+                              : "🟢 STABLE"}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-mono text-stone-400">{msg.timestamp}</span>
                     </div>
                     <p className="font-medium text-xs sm:text-sm leading-snug">{msg.text}</p>
