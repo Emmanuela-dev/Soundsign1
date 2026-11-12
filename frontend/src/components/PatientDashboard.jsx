@@ -49,7 +49,14 @@ export default function PatientDashboard({
   const latestDoctorMessage = clinicianMessages[clinicianMessages.length - 1];
 
   const handleTriageComplete = (record) => {
-    const summary = `${record.chief_complaint} (Location: ${record.location || "N/A"}, Pain: ${record.severity}/10, Priority: ${record.priority})`;
+    const details = [
+      `Location: ${record.location || "not selected"}`,
+      `Pain: ${record.severity}/10`,
+      `Duration: ${record.duration || "not selected"}`,
+      `Medical history: ${record.history.join(", ") || "not provided"}`,
+      `Allergies: ${record.allergies.join(", ") || "not provided"}`,
+    ].join("; ");
+    const summary = `${record.chief_complaint} (${details})`;
     setLastVocalized(record.chief_complaint);
     if (onSendMessage) {
       onSendMessage({
@@ -57,9 +64,8 @@ export default function PatientDashboard({
         text: summary,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isClinical: true,
-        priority: record.priority,
         record,
-        label: `Triage: ${record.priority}`,
+        label: "Patient health information",
       });
     }
   };
@@ -149,7 +155,7 @@ export default function PatientDashboard({
                   }`}
                 >
                   <Zap size={12} />
-                  <span>Triage Intake</span>
+                  <span>Health Details</span>
                 </button>
               </div>
             </div>
@@ -165,7 +171,7 @@ export default function PatientDashboard({
           </p>
         </div>
 
-        {/* 2. Main Viewport: Either Guided Triage Wizard or Camera Viewport */}
+        {/* 2. Main Viewport: Guided health details or camera viewport */}
         {viewMode === "wizard" ? (
           <div className="flex-1 min-h-0 overflow-y-auto pr-1">
             <TriageWizard onTriageComplete={handleTriageComplete} />

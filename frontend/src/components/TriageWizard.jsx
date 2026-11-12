@@ -4,63 +4,46 @@ import {
   AlertTriangle, Thermometer, ChevronRight, ChevronLeft,
   MapPin, Clock, History, CheckCircle2, Zap, RotateCcw,
 } from 'lucide-react';
+import {
+  CLINICAL_VOCABULARY,
+  CLINICAL_VOCABULARY_VERSION,
+} from './clinicalVocabulary';
 
 // ── Step definitions ──────────────────────────────────────────────────────────
 const STEPS = ['complaint', 'location', 'severity', 'duration', 'history', 'allergies', 'done'];
 
-const COMPLAINTS = [
-  { id: 'chest_pain',  label: 'Chest Pain',      phrase: 'I have severe chest pain.',               icon: HeartPulse,   color: 'text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100' },
-  { id: 'breathe',     label: "Can't Breathe",    phrase: 'I cannot breathe properly.',              icon: Wind,         color: 'text-sky-600 bg-sky-50 border-sky-200 hover:bg-sky-100' },
-  { id: 'bleed',       label: 'Bleeding',         phrase: 'I am bleeding.',                          icon: Droplet,      color: 'text-red-600 bg-red-50 border-red-200 hover:bg-red-100' },
-  { id: 'dizzy',       label: 'Dizzy / Faint',    phrase: 'I feel very dizzy and faint.',            icon: Activity,     color: 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' },
-  { id: 'allergy',     label: 'Severe Allergy',   phrase: 'I am having a severe allergic reaction.', icon: ShieldAlert,  color: 'text-purple-600 bg-purple-50 border-purple-200 hover:bg-purple-100' },
-  { id: 'fever',       label: 'High Fever',       phrase: 'I have a very high fever.',               icon: Thermometer,  color: 'text-orange-600 bg-orange-50 border-orange-200 hover:bg-orange-100' },
-  { id: 'seizure',     label: 'Seizure / Fit',    phrase: 'I had a seizure.',                        icon: Zap,          color: 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100' },
-  { id: 'emergency',   label: 'Emergency Help',   phrase: 'Please call emergency help immediately.', icon: AlertTriangle, color: 'text-rose-700 bg-rose-100 border-rose-300 hover:bg-rose-200 font-semibold' },
-  { id: 'medicine',    label: 'Need Medicine',    phrase: 'I urgently need my prescribed medicine.', icon: Pill,         color: 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100' },
-];
-
-const LOCATIONS = [
-  'Chest', 'Head', 'Stomach', 'Abdomen', 'Back', 'Neck', 'Throat',
-  'Arm', 'Leg', 'Eye', 'Ear', 'Whole Body',
-];
-
-const PAIN_LEVELS = [
-  { score: 0,  label: 'None',       color: 'bg-emerald-500' },
-  { score: 2,  label: 'Mild',       color: 'bg-teal-500' },
-  { score: 4,  label: 'Moderate',   color: 'bg-amber-500' },
-  { score: 6,  label: 'Severe',     color: 'bg-orange-500' },
-  { score: 8,  label: 'Very Severe',color: 'bg-rose-600' },
-  { score: 10, label: 'Worst',      color: 'bg-red-700' },
-];
-
-const DURATIONS = [
-  'Just now', 'A few minutes', '30 minutes', '1–2 hours', 'Half a day', 'Over a day',
-];
-
-const HISTORY = [
-  'Heart disease', 'Diabetes', 'Asthma', 'High blood pressure', 'Epilepsy', 'None',
-];
-
-const ALLERGY_OPTIONS = [
-  'Penicillin', 'Aspirin', 'Ibuprofen', 'Sulfa drugs', 'Latex', 'None',
-];
-
-// ── Priority scoring ──────────────────────────────────────────────────────────
-const CRITICAL_IDS = new Set(['chest_pain', 'breathe', 'bleed', 'seizure', 'emergency']);
-const URGENT_IDS   = new Set(['dizzy', 'allergy', 'fever']);
-
-function computePriority(complaintId, severity) {
-  if (CRITICAL_IDS.has(complaintId) || severity >= 8) return 'IMMEDIATE';
-  if (URGENT_IDS.has(complaintId)   || severity >= 5) return 'URGENT';
-  return 'NON-URGENT';
-}
-
-const PRIORITY_STYLES = {
-  IMMEDIATE:  { bg: 'bg-red-600',    text: 'text-white', label: '🔴 IMMEDIATE — Life-threatening' },
-  URGENT:     { bg: 'bg-orange-500', text: 'text-white', label: '🟠 URGENT — Needs prompt attention' },
-  'NON-URGENT': { bg: 'bg-emerald-600', text: 'text-white', label: '🟢 NON-URGENT — Stable' },
+const COMPLAINT_PRESENTATION = {
+  chest_pain: { icon: HeartPulse, color: 'text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100' },
+  breathe: { icon: Wind, color: 'text-sky-600 bg-sky-50 border-sky-200 hover:bg-sky-100' },
+  bleed: { icon: Droplet, color: 'text-red-600 bg-red-50 border-red-200 hover:bg-red-100' },
+  dizzy: { icon: Activity, color: 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' },
+  allergy: { icon: ShieldAlert, color: 'text-purple-600 bg-purple-50 border-purple-200 hover:bg-purple-100' },
+  fever: { icon: Thermometer, color: 'text-orange-600 bg-orange-50 border-orange-200 hover:bg-orange-100' },
+  seizure: { icon: Zap, color: 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100' },
+  emergency: { icon: AlertTriangle, color: 'text-rose-700 bg-rose-100 border-rose-300 hover:bg-rose-200 font-semibold' },
+  medicine: { icon: Pill, color: 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100' },
 };
+
+const COMPLAINTS = CLINICAL_VOCABULARY.complaints.map((complaint) => ({
+  ...complaint,
+  ...COMPLAINT_PRESENTATION[complaint.id],
+}));
+const LOCATIONS = CLINICAL_VOCABULARY.locations;
+const PAIN_COLORS = {
+  0: 'bg-emerald-500',
+  2: 'bg-teal-500',
+  4: 'bg-amber-500',
+  6: 'bg-orange-500',
+  8: 'bg-rose-600',
+  10: 'bg-red-700',
+};
+const PAIN_LEVELS = CLINICAL_VOCABULARY.painLevels.map((level) => ({
+  ...level,
+  color: PAIN_COLORS[level.score],
+}));
+const DURATIONS = CLINICAL_VOCABULARY.durations;
+const HISTORY = CLINICAL_VOCABULARY.history;
+const ALLERGY_OPTIONS = CLINICAL_VOCABULARY.allergies;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function speak(phrase) {
@@ -90,21 +73,41 @@ export default function TriageWizard({ onTriageComplete }) {
     setSeverity(null); setDuration(null); setHistory([]); setAllergies([]);
   };
 
-  const toggleMulti = (arr, setArr, val) =>
-    arr.includes(val) ? setArr(arr.filter(v => v !== val)) : setArr([...arr, val]);
+  const toggleMulti = (arr, setArr, val, options) => {
+    const option = options.find((item) => item.label === val);
+    if (!option) return;
 
-  // Build triage record on completion
+    if (option.exclusive) {
+      setArr(arr.includes(val) ? [] : [val]);
+      return;
+    }
+
+    const selections = arr.filter(
+      (selected) => !options.find((item) => item.label === selected)?.exclusive,
+    );
+    setArr(
+      arr.includes(val)
+        ? selections.filter((selected) => selected !== val)
+        : [...selections, val],
+    );
+  };
+
+  // Share the patient's selected information without assigning clinical priority.
   const handleFinish = () => {
-    const priority = computePriority(complaint?.id, severity ?? 0);
     const record = {
       chief_complaint: complaint?.phrase ?? '',
       complaint_id:    complaint?.id ?? '',
+      vocabulary_version: CLINICAL_VOCABULARY_VERSION,
       location:        location ?? '',
+      location_id:     LOCATIONS.find((option) => option.label === location)?.id ?? '',
       severity:        severity ?? 0,
+      severity_id:     PAIN_LEVELS.find((level) => level.score === severity)?.id ?? '',
       duration:        duration ?? '',
+      duration_id:     DURATIONS.find((option) => option.label === duration)?.id ?? '',
       history,
+      history_ids:     history.map((label) => HISTORY.find((option) => option.label === label)?.id).filter(Boolean),
       allergies,
-      priority,
+      allergy_ids:     allergies.map((label) => ALLERGY_OPTIONS.find((option) => option.label === label)?.id).filter(Boolean),
       timestamp: new Date().toISOString(),
     };
     speak(complaint?.phrase ?? '');
@@ -150,15 +153,15 @@ export default function TriageWizard({ onTriageComplete }) {
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {LOCATIONS.map(loc => (
           <button
-            key={loc}
-            onClick={() => { setLocation(loc); speak(`The problem is in my ${loc}.`); }}
+            key={loc.id}
+            onClick={() => { setLocation(loc.label); speak(`The problem is in my ${loc.label}.`); }}
             className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 ${
-              location === loc
+              location === loc.label
                 ? 'bg-teal-600 text-white border-teal-600 ring-2 ring-offset-1 ring-teal-400'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
             }`}
           >
-            {loc}
+            {loc.label}
           </button>
         ))}
       </div>
@@ -202,15 +205,15 @@ export default function TriageWizard({ onTriageComplete }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {DURATIONS.map(d => (
           <button
-            key={d}
-            onClick={() => { setDuration(d); speak(`I have had this for ${d}.`); }}
+            key={d.id}
+            onClick={() => { setDuration(d.label); speak(`I have had this for ${d.label}.`); }}
             className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 ${
-              duration === d
+              duration === d.label
                 ? 'bg-teal-600 text-white border-teal-600 ring-2 ring-offset-1 ring-teal-400'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
             }`}
           >
-            {d}
+            {d.label}
           </button>
         ))}
       </div>
@@ -226,16 +229,16 @@ export default function TriageWizard({ onTriageComplete }) {
       <p className="text-xs font-semibold text-slate-700 mb-1">Any known medical conditions? <span className="font-normal text-slate-400">(select all that apply)</span></p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {HISTORY.map(h => {
-          const sel = history.includes(h);
+          const sel = history.includes(h.label);
           return (
             <button
-              key={h}
-              onClick={() => toggleMulti(history, setHistory, h)}
+              key={h.id}
+              onClick={() => toggleMulti(history, setHistory, h.label, HISTORY)}
               className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 ${
                 sel ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {h}
+              {h.label}
             </button>
           );
         })}
@@ -252,16 +255,16 @@ export default function TriageWizard({ onTriageComplete }) {
       <p className="text-xs font-semibold text-slate-700 mb-1">Any drug allergies? <span className="font-normal text-slate-400">(select all that apply)</span></p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {ALLERGY_OPTIONS.map(a => {
-          const sel = allergies.includes(a);
+          const sel = allergies.includes(a.label);
           return (
             <button
-              key={a}
-              onClick={() => toggleMulti(allergies, setAllergies, a)}
+              key={a.id}
+              onClick={() => toggleMulti(allergies, setAllergies, a.label, ALLERGY_OPTIONS)}
               className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 ${
                 sel ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {a}
+              {a.label}
             </button>
           );
         })}
@@ -274,13 +277,9 @@ export default function TriageWizard({ onTriageComplete }) {
   );
 
   const renderDone = () => {
-    const priority = computePriority(complaint?.id, severity ?? 0);
-    const pStyle = PRIORITY_STYLES[priority];
     return (
       <div className="text-center space-y-4">
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${pStyle.bg} ${pStyle.text} text-sm font-bold ${priority === 'IMMEDIATE' ? 'animate-pulse' : ''}`}>
-          {pStyle.label}
-        </div>
+        <p className="text-sm font-semibold text-teal-800">Your health information is ready to share with the practitioner.</p>
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 text-left space-y-2 text-xs text-slate-700">
           <div><span className="font-semibold text-slate-900">Complaint:</span> {complaint?.label}</div>
           <div><span className="font-semibold text-slate-900">Location:</span> {location}</div>
@@ -315,8 +314,8 @@ export default function TriageWizard({ onTriageComplete }) {
           <Zap size={18} />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 tracking-tight">Guided Triage Intake</h3>
-          <p className="text-xs text-slate-500">Step-by-step medical assessment</p>
+          <h3 className="text-sm font-semibold text-slate-900 tracking-tight">Guided Health Communication</h3>
+          <p className="text-xs text-slate-500">Communication aid only; English vocabulary is a draft pending clinician review.</p>
         </div>
       </div>
 
