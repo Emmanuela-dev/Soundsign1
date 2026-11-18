@@ -40,23 +40,24 @@ api_key = os.getenv("GEMINI_API_KEY")
 # This list is the exact set of 115 words in the sign video library.
 # The AI prompt references it so Gemini knows which tokens have videos.
 _VOCAB_UPPER = sorted([
-    "AFTER", "AGAIN", "AGAINST", "AGE", "ALL", "ALONE", "ALSO", "AND", "ASK", "AT",
-    "BE", "BEAUTIFUL", "BEFORE", "BEST", "BETTER", "BUSY", "BUT", "BYE",
-    "CAN", "CANNOT", "CHANGE", "COLLEGE", "COME", "COMPUTER",
-    "DAY", "DISTANCE", "DO", "DO NOT", "DOES NOT",
-    "EAT", "ENGINEER", "FIGHT", "FINISH", "FROM", "GLITTER",
+    "ABDOMEN", "AFTER", "AGAIN", "AGAINST", "AGE", "ALL", "ALLERGY", "ALONE", "ALSO", "AND", "ARM", "ASK", "AT",
+    "BACK", "BE", "BEAUTIFUL", "BEFORE", "BEST", "BETTER", "BLEED", "BREATHE", "BUSY", "BUT", "BYE",
+    "CALL", "CAN", "CANNOT", "CHANGE", "CHEST", "COLLAPSE", "COLLEGE", "COME", "COMPUTER",
+    "DAY", "DISTANCE", "DIZZY", "DO", "DO NOT", "DOCTOR", "DOES NOT",
+    "EAR", "EAT", "EMERGENCY", "ENGINEER", "EYE", "FEVER", "FIGHT", "FINISH", "FRACTURE", "FROM", "GLITTER",
     "GO", "GOD", "GOLD", "GOOD", "GREAT",
-    "HAND", "HANDS", "HAPPY", "HELLO", "HELP", "HER", "HERE", "HIS",
-    "HOME", "HOMEPAGE", "HOW",
-    "INVENT", "IT", "KEEP", "LANGUAGE", "LAUGH", "LEARN",
-    "ME", "MORE", "MY", "NAME", "NEXT", "NOT", "NOW",
-    "OF", "ON", "OUR", "OUT", "PRETTY", "RIGHT", "SAD", "SAFE", "SEE", "SELF",
-    "SIGN", "SING", "SO", "SOUND", "STAY", "STUDY",
-    "TALK", "TELEVISION", "THANK", "THANK YOU", "THAT", "THEY",
-    "THIS", "THOSE", "TIME", "TO", "TYPE",
-    "US", "WALK", "WASH", "WAY", "WE", "WELCOME",
+    "HAND", "HANDS", "HAPPY", "HEAD", "HEART", "HELLO", "HELP", "HER", "HERE", "HIS",
+    "HOME", "HOMEPAGE", "HOSPITAL", "HOW",
+    "INJECTION", "INVENT", "IT", "KEEP", "LANGUAGE", "LAUGH", "LEARN", "LEG", "LIE",
+    "ME", "MEDICINE", "MORE", "MY", "NAME", "NAUSEA", "NECK", "NEXT", "NOT", "NOW", "NUMB", "NURSE",
+    "OF", "ON", "OUR", "OUT", "OXYGEN", "PAIN", "PILL", "PRESSURE", "PRETTY", "PULSE",
+    "RASH", "RIGHT", "SAD", "SAFE", "SCALE", "SEE", "SEIZURE", "SELF",
+    "SIGN", "SING", "SIT", "SO", "SOUND", "STAY", "STOMACH", "STROKE", "STUDY", "SURGERY", "SWOLLEN",
+    "TALK", "TELEVISION", "TEMPERATURE", "THANK", "THANK YOU", "THAT", "THEY",
+    "THIS", "THOSE", "THROAT", "TIME", "TO", "TYPE",
+    "URGENT", "US", "VOMIT", "WALK", "WASH", "WAY", "WE", "WELCOME",
     "WHAT", "WHEN", "WHERE", "WHICH", "WHO", "WHOLE", "WHOSE", "WHY", "WILL",
-    "WITH", "WITHOUT", "WORDS", "WORK", "WORLD", "WRONG",
+    "WITH", "WITHOUT", "WORDS", "WORK", "WORLD", "WOUND", "WRONG",
     "YOU", "YOUR", "YOURSELF",
 ])
 _VOCAB_SET = set(_VOCAB_UPPER)
@@ -69,38 +70,30 @@ Your mission is to provide clinically precise, unambiguous communication between
 SUPPORTED SIGN VOCABULARY ({len(_VOCAB_UPPER)} words):
 {_VOCAB_LIST_STR}
 
-Clinical Disambiguation & Strict Rules:
-1. WORD ORDER: Use standard ISL grammar (Time — Subject — Object — Verb).
-   - Place time words (NOW, TODAY, TOMORROW, YESTERDAY, TIME, DAY, BEFORE, AFTER, NEXT) at the BEGINNING.
-   - Place the main VERB at the END of the clause.
-   - Place clinical question words (WHAT, WHERE, WHY, WHO, WHEN, HOW) at the END of the sentence.
-2. MEDICAL TERMINOLOGY MAPPING:
-   - "pain" / "hurts" / "ache" → SAD or WRONG (or fingerspell P-A-I-N).
-   - "medicine" / "pill" / "drug" → EAT.
-   - "doctor" / "nurse" / "emergency" → HELP.
-   - "hospital" / "clinic" → HOME.
-   - "fever" / "hot" → CHANGE MORE.
-   - "breathe" / "lungs" → STAY.
-   - "where does it hurt" → YOU PAIN WHERE.
-   - "rate pain 0 to 10" → YOUR PAIN NUMBER 0 TO 10 WHAT.
-   - "do you have allergies" → YOU ALLERGY HAVE NOT OR YES.
-3. CAPITALIZATION: Output every sign word in UPPERCASE only.
-4. VOCABULARY CONSTRAINT: Every output word MUST appear in the SUPPORTED SIGN VOCABULARY list above.
-   - Replace unsupported words with the closest supported synonym.
-   - For proper nouns and medical terms with no exact sign, fingerspell them with hyphens (e.g. Asthma → A-S-T-H-M-A).
-5. OMIT: Articles (A, AN, THE) and auxiliary verbs (IS, ARE, AM, WAS, WERE, HAVE, HAS, HAD, WILL BE).
-6. NEGATION: Place NOT or DO NOT after the verb or at the end.
-7. OUTPUT FORMAT: Output ONLY the ISL gloss string — no markdown, no quotes, no explanation.
+Clinical Grammar & Triage Rules:
+1. MEDICAL ORDER: Use standard Time — Location — Symptom/Object — Severity (1-10) — Verb syntax.
+   - Place time words (NOW, TODAY, BEFORE, AFTER, NEXT) at the BEGINNING.
+   - Place anatomical locations (HEAD, CHEST, STOMACH, HEART) before the symptom.
+   - Place question words (WHAT, WHERE, WHY, WHO, WHEN, HOW) at the END of the question.
+2. CAPITALIZATION: Output every sign word in UPPERCASE only.
+3. CLINICAL VOCABULARY MAPPING: Every output word MUST appear in the SUPPORTED SIGN VOCABULARY list above.
+   - Map clinical synonyms: HURT/ACHE → PAIN, MEDS/DRUG/TABLET → MEDICINE, BLOOD → BLEED, INHALE/EXHALE → BREATHE, PHYSICIAN → DOCTOR, CLINIC → HOSPITAL, FAINT → DIZZY, VOMITING → VOMIT, NAUSEOUS → NAUSEA, SWELLING → SWOLLEN, NUMBNESS → NUMB, SOB/SHORTNESS → BREATHE, COLLAPSE → COLLAPSE, SEIZURE → SEIZURE, STROKE → STROKE, BP → PRESSURE, SPO2 → OXYGEN, HR → PULSE.
+   - For medications, dosages, and anatomical terms outside the lexicon, fingerspell them using hyphenated uppercase letters (e.g. Aspirin → A-S-P-I-R-I-N, Penicillin → P-E-N-I-C-I-L-L-I-N, 500mg → 5-0-0-M-G).
+4. OMIT: Articles (A, AN, THE) and auxiliary verbs (IS, ARE, AM, WAS, WERE, HAVE, HAS, HAD, WILL BE).
+5. NEGATION: Place NOT or DO NOT after the symptom or at the end.
+6. OUTPUT FORMAT: Output ONLY the sign gloss string — no markdown, no quotes, no explanation.
 
-Examples:
-English: "Where does it hurt?"                  → YOU SAD WHERE
-English: "Rate your pain from 0 to 10."         → YOUR SAD NUMBER 0 TO 10 WHAT
-English: "Do you have any allergies to medicine?" → YOU EAT MEDICINE WRONG HAVE QUESTION
-English: "Are you having difficulty breathing?" → YOU BREATH CANNOT QUESTION
-English: "A doctor will see you now."           → NOW HELP SEE YOU
-English: "I have severe chest pain."            → ME CHEST SAD GREAT
-English: "When did this fever start?"           → FEVER START WHEN
-English: "You are safe, help is here."          → YOU SAFE HELP HERE
+Clinical Examples:
+Doctor: "Where does it hurt?"                                   → PAIN WHERE
+Doctor: "How severe is your chest pain from 1 to 10?"           → CHEST PAIN SCALE 1 10 WHAT
+Doctor: "Are you feeling dizzy right now?"                      → NOW DIZZY YOU FEEL
+Doctor: "Do you have any difficulty breathing?"                 → BREATHE HARD YOU HAVE
+Doctor: "Are you allergic to penicillin?"                       → P-E-N-I-C-I-L-L-I-N ALLERGY YOU HAVE
+Doctor: "Please take this medicine after eating."               → EAT AFTER THIS MEDICINE TAKE
+Doctor: "We need to check your heart and blood pressure."       → YOUR HEART CHECK WE MUST
+Doctor: "The nurse will give you an injection."                 → NURSE INJECTION GIVE WILL
+Doctor: "Hello, I am Doctor John, I will help you today."       → HELLO ME DOCTOR J-O-H-N TODAY HELP YOU
+Doctor: "Please stay still and breathe slowly."                 → STAY STILL BREATHE SLOW
 """
 
 
@@ -141,19 +134,23 @@ PRONOUN_MAP = {
 }
 
 KNOWN_WORDS = {
-    "after", "again", "against", "age", "all", "alone", "also", "and", "ask", "at",
-    "be", "beautiful", "before", "best", "better", "busy", "but", "bye", "can",
-    "cannot", "change", "college", "come", "computer", "day", "distance", "do",
-    "do not", "does not", "eat", "engineer", "fight", "finish", "from", "glitter",
-    "go", "god", "gold", "good", "great", "hand", "hands", "happy", "hello", "help",
-    "her", "here", "his", "home", "homepage", "how", "invent", "it", "keep",
-    "language", "laugh", "learn", "me", "more", "my", "name", "next", "not", "now",
-    "of", "on", "our", "out", "pretty", "right", "sad", "safe", "see", "self",
-    "sign", "sing", "so", "sound", "stay", "study", "talk", "television",
-    "thank you", "thank", "that", "they", "this", "those", "time", "to", "type",
-    "us", "walk", "wash", "way", "we", "welcome", "what", "when", "where", "which",
+    "abdomen", "after", "again", "against", "age", "all", "allergy", "alone", "also", "and", "arm", "ask", "at",
+    "back", "be", "beautiful", "before", "best", "better", "bleed", "breathe", "busy", "but", "bye", "call", "can",
+    "cannot", "change", "chest", "collapse", "college", "come", "computer", "day", "distance", "dizzy", "do",
+    "do not", "doctor", "does not", "ear", "eat", "emergency", "engineer", "eye", "fever", "fight", "finish",
+    "fracture", "from", "glitter",
+    "go", "god", "gold", "good", "great", "hand", "hands", "happy", "head", "heart", "hello", "help",
+    "her", "here", "his", "home", "homepage", "hospital", "how", "injection", "invent", "it", "keep",
+    "language", "laugh", "learn", "leg", "lie", "me", "medicine", "more", "my", "name", "nausea", "neck",
+    "next", "not", "now", "numb", "nurse",
+    "of", "on", "our", "out", "oxygen", "pain", "pill", "pressure", "pretty", "pulse",
+    "rash", "right", "sad", "safe", "scale", "see", "seizure", "self",
+    "sign", "sing", "sit", "so", "sound", "stay", "stomach", "stroke", "study", "surgery", "swollen",
+    "talk", "television", "temperature", "thank you", "thank", "that", "they", "this", "those", "throat",
+    "time", "to", "type",
+    "urgent", "us", "vomit", "walk", "wash", "way", "we", "welcome", "what", "when", "where", "which",
     "who", "whole", "whose", "why", "will", "with", "without", "words", "work",
-    "world", "wrong", "you", "your", "yourself"
+    "world", "wound", "wrong", "you", "your", "yourself"
 }
 
 CONTRACTIONS_MAP = {
@@ -416,6 +413,49 @@ def text_to_isl_gloss(text):
     except Exception as e:
         logging.warning(f"Gemini API error ({e}). Falling back to rule-based ISL translation.")
         return rule_based_isl_gloss(text), None, "rule_based"
+
+
+from datetime import datetime
+
+CRITICAL_KEYWORDS = {"chest", "breathe", "unconscious", "seizure", "stroke", "bleed", "collapse", "fracture", "wound"}
+URGENT_KEYWORDS   = {"fever", "dizzy", "allergy", "injection", "surgery", "nausea", "vomit", "numb", "swollen", "rash", "pain"}
+
+def score_triage_priority(text: str) -> str:
+    words = set(text.lower().split())
+    if words & CRITICAL_KEYWORDS:
+        return "IMMEDIATE"
+    if words & URGENT_KEYWORDS:
+        return "URGENT"
+    return "NON-URGENT"
+
+
+@app.route("/triage", methods=["POST"])
+def triage():
+    data = request.get_json() or {}
+    chief_complaint = data.get("chief_complaint", "")
+    severity = data.get("severity", 0)
+    location = data.get("location", "")
+    duration = data.get("duration", "")
+    history = data.get("history", [])
+    allergies = data.get("allergies", [])
+
+    # Build a combined phrase for ISL gloss
+    combined = " ".join(filter(None, [chief_complaint, location]))
+    isl_gloss, _, mode = text_to_isl_gloss(combined) if combined else ("", None, "empty")
+
+    record = {
+        "chief_complaint": chief_complaint,
+        "location": location,
+        "severity": severity,
+        "duration": duration,
+        "history": history,
+        "allergies": allergies,
+        "isl_gloss": isl_gloss,
+        "priority": score_triage_priority(chief_complaint + " " + location),
+        "mode": mode,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+    return jsonify(record)
 
 
 @app.route("/translate", methods=["POST"])
