@@ -1,4 +1,16 @@
 import React, { useState } from "react";
+import {
+  Columns,
+  Mic,
+  Video,
+  Maximize2,
+  Volume2,
+  Play,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
+} from "lucide-react";
 import ISLVideoSection from "./ISLVideoSection";
 import GestureTerminal from "./GestureTerminal";
 import ClinicalHeroIllustration from "./ClinicalHeroIllustration";

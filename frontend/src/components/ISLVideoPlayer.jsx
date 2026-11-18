@@ -307,7 +307,7 @@ const ISLVideoPlayer = ({
             Speed:
           </span>
           {[
-            { id: "auto", label: "⚡ Auto" },
+            { id: "auto", label: "Auto" },
             { id: 1.0,   label: "1×"      },
             { id: 1.5,   label: "1.5×"    },
             { id: 2.0,   label: "2×"      },
@@ -318,7 +318,8 @@ const ISLVideoPlayer = ({
                   ? "bg-hearing-600 text-white font-bold shadow-xs"
                   : "text-slate-600 dark:text-slate-300 hover:bg-warm-200 dark:hover:bg-slate-700"
               }`}>
-              {m.label}
+              {m.id === "auto" && <Zap className="w-2.5 h-2.5 inline" />}
+              <span>{m.label}</span>
             </button>
           ))}
           <button onClick={toggleFs} title="Fullscreen"
@@ -401,8 +402,9 @@ const ISLVideoPlayer = ({
                 </button>
               )}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-emerald-400 bg-black/60 px-2 py-1 rounded-full">
-                  {speedMode === "auto" ? `⚡ ${activeRate.toFixed(1)}×` : `${activeRate.toFixed(1)}×`}
+                <span className="text-xs font-mono text-emerald-400 bg-black/60 px-2 py-1 rounded-full flex items-center gap-1">
+                  {speedMode === "auto" && <Zap className="w-2.5 h-2.5" />}
+                  <span>{activeRate.toFixed(1)}×</span>
                 </span>
                 <button onClick={toggleFs}
                   className="p-1.5 bg-black/50 rounded-full text-white hover:bg-black/80">
@@ -465,10 +467,9 @@ const ISLVideoPlayer = ({
           <>
             <div className="absolute top-2 right-2 z-30 flex items-center gap-2">
               <span className="text-xs font-mono text-emerald-400 bg-black/70
-                               px-2 py-0.5 rounded-full border border-emerald-600/40">
-                {speedMode === "auto"
-                  ? `⚡ ${activeRate.toFixed(1)}×`
-                  : `${activeRate.toFixed(1)}×`}
+                               px-2 py-0.5 rounded-full border border-emerald-600/40 flex items-center gap-1">
+                {speedMode === "auto" && <Zap className="w-2.5 h-2.5" />}
+                <span>{activeRate.toFixed(1)}×</span>
               </span>
               <span className="flex items-center gap-1.5 bg-green-600/90 text-white
                                text-xs font-bold px-2.5 py-1 rounded-full shadow">

@@ -25,6 +25,12 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Virtual environment
+.venv/
+backend/.venv/
+venv/
+ENV/
+
 # Large training arrays
 *.npy
 

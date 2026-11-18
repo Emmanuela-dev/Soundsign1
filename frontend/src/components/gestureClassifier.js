@@ -524,7 +524,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
         word: "Thank you",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "➡️ Forward Stroke (Thank You)",
+        motionLabel: "Forward Stroke",
       };
     }
 
@@ -541,7 +541,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
         word: "Happy",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "⬆️ Upward Brush (Happy)",
+        motionLabel: "Upward Brush",
       };
     }
 
@@ -558,7 +558,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
         word: "Yes",
         confidence: 98,
         isDynamicMotion: true,
-        motionLabel: "↕️ Nodding Motion (Yes)",
+        motionLabel: "Vertical Nod",
       };
     }
 
@@ -574,7 +574,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
         word: "No",
         confidence: 97,
         isDynamicMotion: true,
-        motionLabel: "↔️ Shaking Motion (No)",
+        motionLabel: "Horizontal Shake",
       };
     }
   }
@@ -672,7 +672,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
 
   // 11. Pinky Only / Letter I (ℹ️)
   if (isPinkyExt && isIndexCurled && isMiddleCurled && isRingCurled && !isThumbExt) {
-    return { id: "letter_i", name: "Letter I (Pinky)", icon: "ℹ️", word: "Letter I", confidence: 96 };
+    return { id: "letter_i", name: "Letter I (Pinky)", icon: "I", word: "Letter I", confidence: 96 };
   }
 
   // 12. OK Sign / ASL 9 (ok / 9)
@@ -756,7 +756,7 @@ function classifySingleHandInternal(landmarks, customGestures = [], motionFeatur
     t2i > palmScale * 0.45 && t2i < palmScale * 0.75 &&
     !isIndexExt && !isIndexCurled && !isMiddleExt && !isMiddleCurled
   ) {
-    return { id: "letter_c", name: "Letter C", icon: "©️", word: "Letter C", confidence: 94 };
+    return { id: "letter_c", name: "Letter C", icon: "C", word: "Letter C", confidence: 94 };
   }
 
   // 25. Number 0 / Letter O (0 / O)
@@ -1022,7 +1022,16 @@ export function clearSmoothedLandmarks() {
 /**
  * Draws real hand skeleton and tracking overlays for BOTH hands on canvas.
  */
-export function drawHandTracking(ctx, multiLandmarks, width, height, currentGesture, motionFeatures = null) {
+export function drawHandTracking(
+  ctx,
+  multiLandmarks,
+  width,
+  height,
+  currentGesture,
+  motionFeatures = null,
+  dwellProgress = 0,
+  isMedical = false
+) {
   if (!multiLandmarks || multiLandmarks.length === 0) {
     smoothedLandmarksMap.clear();
     ctx.clearRect(0, 0, width, height);
@@ -1173,7 +1182,7 @@ export function drawHandTracking(ctx, multiLandmarks, width, height, currentGest
     if (isMatched && (currentGesture.isTwoHanded || handIndex === 0)) {
       const modeSuffix = currentGesture.isTwoHanded ? "[2 HANDS]" : "[1 HAND ONLY]";
       const motionTag = currentGesture.motionLabel ? ` ${currentGesture.motionLabel}` : "";
-      tagText = `${currentGesture.icon} ${currentGesture.name}: "${currentGesture.word}" ${modeSuffix}${motionTag} (${currentGesture.confidence}%)`;
+      tagText = `${currentGesture.name}: "${currentGesture.word}" ${modeSuffix}${motionTag} (${currentGesture.confidence}%)`;
     } else if (motionFeatures?.motionType && motionFeatures.motionType !== "still") {
       tagText = `● MOTION: ${motionFeatures.motionType.toUpperCase().replace("_", " ")} DETECTED`;
     } else if (multiLandmarks.length > 1) {
@@ -1190,5 +1199,46 @@ export function drawHandTracking(ctx, multiLandmarks, width, height, currentGest
 
     ctx.fillStyle = isMatched ? "#4ade80" : "#ffffff";
     ctx.fillText(tagText, minX + 8, Math.max(14, minY - 9));
+
+    // 4. Medical Closed-Loop Dwell Confirmation Ring (Multi-frame stabilization)
+    if (dwellProgress > 0 && handIndex === 0 && pts[9]) {
+      const centerX = pts[9].x;
+      const centerY = pts[9].y;
+      const radius = 34;
+
+      ctx.save();
+      // Outer subtle glow
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius + 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Background Track Ring
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Progress Arc
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + dwellProgress * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.strokeStyle = dwellProgress >= 1.0 ? "#22c55e" : "#00d2ff";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      // Percentage Center Text
+      ctx.font = "bold 10px monospace";
+      ctx.fillStyle = dwellProgress >= 1.0 ? "#4ade80" : "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const pctText = dwellProgress >= 1.0 ? "LOCK" : `${Math.round(dwellProgress * 100)}%`;
+      ctx.fillText(pctText, centerX, centerY);
+      ctx.restore();
+    }
   });
 }

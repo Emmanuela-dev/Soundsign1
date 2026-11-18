@@ -1,7 +1,79 @@
 import React, { useState, useRef, useEffect } from "react";
+import {
+  Hand,
+  HeartHandshake,
+  Users,
+  ThumbsUp,
+  HelpCircle,
+  CheckCircle2,
+  Ban,
+  Utensils,
+  MessageSquare,
+  ShieldCheck,
+  Smile,
+  Frown,
+  BookOpen,
+  Video,
+  Volume2,
+  Clock,
+  Home,
+  Briefcase,
+  Sun,
+  Sparkles,
+  Play,
+  Pause,
+  RotateCcw,
+  Repeat,
+  Camera,
+  Search,
+  X,
+} from "lucide-react";
 import { speakText, EMOTION_PROFILES } from "./ttsUtils";
 import { WORD_DATABASE } from "./wordDatabase";
 import { getCachedSrc } from "../hooks/useVideoPreloader";
+
+const SIGN_ICON_MAP = {
+  "Hello": Hand,
+  "Thank You": HeartHandshake,
+  "Welcome": Users,
+  "Good": ThumbsUp,
+  "Help": HelpCircle,
+  "Right": CheckCircle2,
+  "Not": Ban,
+  "Eat": Utensils,
+  "Talk": MessageSquare,
+  "Safe": ShieldCheck,
+  "Happy": Smile,
+  "Sad": Frown,
+  "Learn": BookOpen,
+  "Sign": Video,
+  "Sound": Volume2,
+  "Time": Clock,
+  "Home": Home,
+  "Work": Briefcase,
+  "Day": Sun,
+  "Beautiful": Sparkles,
+};
+
+function SignVisual({ sign, className = "w-5 h-5 text-blue-600 dark:text-[#004AFF]" }) {
+  if (!sign) return <Video className={className} />;
+  if (sign.number !== undefined) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-[#DDE3E7] font-mono font-bold text-[11px] border border-slate-300 dark:border-slate-700">
+        #{sign.number}
+      </span>
+    );
+  }
+  if (sign.letter !== undefined) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono font-bold text-[11px] border border-blue-200 dark:border-blue-800/50">
+        {sign.letter}
+      </span>
+    );
+  }
+  const IconComp = SIGN_ICON_MAP[sign.word] || Video;
+  return <IconComp className={className} />;
+}
 
 // ── Essential high-frequency signs with rich descriptions ──────────────────
 export const POPULAR_SIGNS = [
@@ -30,7 +102,6 @@ export const POPULAR_SIGNS = [
 export const NUMBER_SIGNS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({
   word: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"][n],
   number: String(n),
-  icon: `${n}️⃣`,
   category: "Numbers",
   path: `/videos/numbers/${n}.mp4`,
   description: `Official Indian Sign Language number sign for digit ${n}`,
@@ -191,7 +262,9 @@ export default function ISLSignVideoTranslator({
           {/* Active Gesture Word Banner (Overlay on Video) */}
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 bg-black/80 backdrop-blur-md p-2.5 rounded-xl border border-white/10 dark:border-white/20 text-white z-10">
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="emoji text-2xl select-none flex-shrink-0">{selectedSign.icon}</span>
+              <div className="p-1.5 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <SignVisual sign={selectedSign} className="w-5 h-5 text-emerald-400" />
+              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="text-base font-extrabold text-[#DDE3E7] truncate leading-tight">
@@ -231,25 +304,27 @@ export default function ISLSignVideoTranslator({
             {/* Play/Pause */}
             <button
               onClick={handleTogglePlay}
-              className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-slate-700 dark:text-[#DDE3E7] text-xs font-bold cursor-pointer transition-colors"
+              className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-slate-700 dark:text-[#DDE3E7] text-xs font-bold cursor-pointer transition-colors flex items-center gap-1"
               title={isPlaying ? "Pause video" : "Play video"}
             >
-              {isPlaying ? "⏸ Pause" : "▶ Play"}
+              {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              <span>{isPlaying ? "Pause" : "Play"}</span>
             </button>
 
             {/* Replay */}
             <button
               onClick={handleReplay}
-              className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-slate-700 dark:text-[#DDE3E7] text-xs font-semibold cursor-pointer transition-colors"
+              className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-[#004AFF]/20 text-slate-700 dark:text-[#DDE3E7] text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
               title="Replay video and re-announce voice"
             >
-              ↺ Replay
+              <RotateCcw className="w-3 h-3" />
+              <span>Replay</span>
             </button>
 
             {/* Loop Toggle */}
             <button
               onClick={() => setIsLooping(!isLooping)}
-              className={`px-2 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 ${
                 isLooping
                   ? "bg-blue-600 text-white dark:bg-[#004AFF] dark:text-[#DDE3E7]"
                   : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-[#DDE3E7]/70 hover:bg-slate-200"
@@ -282,7 +357,7 @@ export default function ISLSignVideoTranslator({
           {onSwitchToCamera && (
             <button
               onClick={onSwitchToCamera}
-              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-all hover:scale-102"
+              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#004AFF] dark:hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all hover:scale-102"
               title="Switch to camera view and practice signing this gesture"
             >
               <Camera size={13} />
@@ -307,9 +382,9 @@ export default function ISLSignVideoTranslator({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              className="absolute right-2.5 top-2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-white"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -365,9 +440,7 @@ export default function ISLSignVideoTranslator({
                   title={`Play sign for "${sign.word}" and speak voice`}
                 >
                   <div className="flex items-start justify-between gap-1 w-full mb-1">
-                    <span className="emoji text-lg group-hover:scale-110 transition-transform">
-                      {sign.icon}
-                    </span>
+                    <SignVisual sign={sign} className="w-4 h-4 text-slate-700 dark:text-slate-300 group-hover:text-blue-600 group-hover:scale-110 transition-transform" />
                     {isSelected && (
                       <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#004AFF] animate-ping" />
                     )}

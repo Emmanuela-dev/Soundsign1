@@ -118,8 +118,8 @@ export const useSpeechRecognition = () => {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         console.warn("Backend:", res.status, err);
-        if (res.status === 429)     setTranslationError("⚠️ API rate limit — please wait a moment.");
-        else if (res.status >= 500) setTranslationError("⚠️ Backend error — check GEMINI_API_KEY.");
+        if (res.status === 429)     setTranslationError("API rate limit reached — please wait a moment.");
+        else if (res.status >= 500) setTranslationError("Backend service error — check GEMINI_API_KEY configuration.");
         return;
       }
       const data = await res.json();
@@ -133,9 +133,9 @@ export const useSpeechRecognition = () => {
       if (err.name === "AbortError") return;
       // Context-aware message: production uses Render, dev uses localhost.
       const backendLabel = import.meta.env.PROD
-        ? "the cloud backend (may be warming up — try again in a moment)"
-        : "the backend on port 5000 — is it running?";
-      setTranslationError(`⚠️ Cannot reach ${backendLabel}`);
+        ? "cloud backend (service initializing — retry shortly)"
+        : "backend service on port 5000 — check server status";
+      setTranslationError(`Cannot reach ${backendLabel}`);
     } finally {
       inFlightRef.current--;
       if (inFlightRef.current === 0) setIsProcessing(false);
